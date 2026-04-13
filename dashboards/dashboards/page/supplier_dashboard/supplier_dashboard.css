@@ -1,0 +1,245 @@
+.layout-main-section-wrapper.supplier-dashboard-layout {
+	padding: 0;
+	background: #edf0f2;
+}
+
+.supplier-dashboard-page-head {
+	display: none;
+}
+
+.supplier-dashboard-screen {
+	padding: 16px 18px 24px;
+}
+
+.supplier-dashboard-shell {
+	overflow: hidden;
+	border-radius: 4px;
+	background: #f8f8f8;
+	box-shadow: 0 10px 30px rgba(49, 65, 91, 0.14);
+}
+
+.supplier-dashboard-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 14px 18px;
+	background: linear-gradient(180deg, #07b44d 0%, #02a543 100%);
+	color: #fff;
+}
+
+.supplier-dashboard-brand {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.supplier-dashboard-logo {
+	display: grid;
+	place-items: center;
+	width: 42px;
+	height: 42px;
+	border: 2px solid rgba(255, 255, 255, 0.7);
+	border-radius: 999px;
+	background: radial-gradient(circle at 30% 30%, #f0fff4, #3aa65f);
+	color: #20733b;
+	font-size: 21px;
+	font-weight: 800;
+}
+
+.supplier-dashboard-title {
+	font-size: 18px;
+	font-weight: 800;
+	letter-spacing: 0.02em;
+}
+
+.supplier-dashboard-subtitle {
+	margin-top: 2px;
+	font-size: 12px;
+	font-weight: 700;
+	text-transform: uppercase;
+	opacity: 0.95;
+}
+
+.supplier-dashboard-info {
+	display: grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	border: 2px solid rgba(255, 255, 255, 0.78);
+	border-radius: 999px;
+	font-size: 20px;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.supplier-dashboard-body {
+	display: grid;
+	grid-template-columns: 180px minmax(0, 1fr);
+	gap: 18px;
+	padding: 14px 14px 18px;
+}
+
+.supplier-dashboard-kpis {
+	display: grid;
+	align-content: start;
+	gap: 16px;
+}
+
+.supplier-dashboard-kpi-card {
+	padding: 22px 14px 16px;
+	border-radius: 2px;
+	background: linear-gradient(180deg, #ffffff 0%, #f1f2f2 100%);
+	box-shadow: 0 5px 16px rgba(0, 0, 0, 0.12);
+	text-align: center;
+}
+
+.supplier-dashboard-kpi-value {
+	min-height: 38px;
+	color: #12a63d;
+	font-size: 19px;
+	font-weight: 800;
+	line-height: 1.2;
+}
+
+.supplier-dashboard-kpi-label {
+	margin-top: 8px;
+	color: #6d6d49;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.supplier-dashboard-table-panel {
+	min-width: 0;
+}
+
+.supplier-dashboard-table-meta {
+	margin-bottom: 8px;
+	padding-left: 8px;
+	color: #5f7f69;
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.supplier-dashboard-table-wrap {
+	overflow: auto;
+	max-height: calc(100vh - 210px);
+	padding-right: 8px;
+}
+
+.supplier-dashboard-table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	background: #fff;
+	font-size: 14px;
+	color: #2f2f2f;
+}
+
+.supplier-dashboard-table thead th {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	padding: 12px 10px 10px;
+	border-bottom: 1px solid #7da9cf;
+	background: #fff;
+	color: #2e2e2e;
+	font-size: 13px;
+	font-weight: 800;
+	text-align: right;
+	white-space: nowrap;
+}
+
+.supplier-dashboard-table thead th.is-text,
+.supplier-dashboard-table tbody td.is-text,
+.supplier-dashboard-table tfoot td.is-text {
+	text-align: left;
+}
+
+.supplier-dashboard-table tbody td,
+.supplier-dashboard-table tfoot td {
+	padding: 5px 10px;
+	border-bottom: 1px solid #ececec;
+	text-align: right;
+	white-space: nowrap;
+}
+
+.supplier-dashboard-table tbody tr:nth-child(even) td {
+	background: #f2f2f2;
+}
+
+.supplier-dashboard-table tbody tr:hover td {
+	background: #ebf7ff;
+}
+
+.supplier-dashboard-table td.is-negative,
+.supplier-dashboard-table .is-negative {
+	color: #6f2b2b;
+}
+
+.supplier-dashboard-table tfoot td {
+	position: sticky;
+	bottom: 0;
+	border-top: 2px solid #4e89be;
+	border-bottom: 0;
+	background: #fff;
+	font-weight: 800;
+}
+
+.supplier-dashboard-empty {
+	display: grid;
+	place-items: center;
+	min-height: 180px;
+	border-radius: 4px;
+	background: #fff;
+	color: #5b6571;
+	font-weight: 600;
+}
+
+@media (max-width: 1180px) {
+	.supplier-dashboard-body {
+		grid-template-columns: 1fr;
+	}
+
+	.supplier-dashboard-kpis {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.supplier-dashboard-table-wrap {
+		max-height: none;
+	}
+}
+
+@media (max-width: 720px) {
+	.supplier-dashboard-screen {
+		padding: 12px;
+	}
+
+	.supplier-dashboard-header {
+		padding: 12px;
+	}
+
+	.supplier-dashboard-title {
+		font-size: 15px;
+	}
+
+	.supplier-dashboard-body {
+		padding: 12px;
+		gap: 12px;
+	}
+
+	.supplier-dashboard-kpis {
+		grid-template-columns: 1fr;
+		gap: 12px;
+	}
+
+	.supplier-dashboard-table {
+		font-size: 12px;
+	}
+
+	.supplier-dashboard-table thead th,
+	.supplier-dashboard-table tbody td,
+	.supplier-dashboard-table tfoot td {
+		padding: 6px 8px;
+	}
+}

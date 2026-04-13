@@ -33,6 +33,11 @@ dashboards.ui.ClientDashboardPage = class ClientDashboardPage {
 			</div>
 		`);
 
+		dashboards.ui.setupDashboardSidebar({
+			page: this.page,
+			route: "client-dashboard",
+		});
+
 		this.$tabs = this.page.main.find('[data-region="tabs"]');
 		this.$clientTable = this.page.main.find('[data-region="client-table"]');
 	}

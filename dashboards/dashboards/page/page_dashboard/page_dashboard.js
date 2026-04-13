@@ -84,6 +84,11 @@ dashboards.ui.PageDashboardPage = class PageDashboardPage {
 			</div>
 		`);
 
+		dashboards.ui.setupDashboardSidebar({
+			page: this.page,
+			route: "page-dashboard",
+		});
+
 		this.$tabs = this.page.main.find('[data-region="tabs"]');
 		this.$kpis = this.page.main.find('[data-region="kpis"]');
 		this.$years = this.page.main.find('[data-region="years"]');

@@ -45,6 +45,11 @@ dashboards.ui.CashDashboardPage = class CashDashboardPage {
 			</div>
 		`);
 
+		dashboards.ui.setupDashboardSidebar({
+			page: this.page,
+			route: "cash-dashboard",
+		});
+
 		this.$tabs = this.page.main.find('[data-region="tabs"]');
 		this.$months = this.page.main.find('[data-region="months"]');
 		this.$cashKpi = this.page.main.find('[data-region="cash-kpi"]');
@@ -56,8 +61,13 @@ dashboards.ui.CashDashboardPage = class CashDashboardPage {
 	}
 
 	load_context() {
+		this.render_loading();
+
 		frappe.call({
 			method: "dashboards.dashboards.page.cash_dashboard.cash_dashboard.get_dashboard_context",
+			args: {
+				month: this.state.month,
+			},
 			callback: (r) => {
 				this.context = r.message || {};
 				this.state = { ...(this.context.default_filters || {}) };
@@ -112,30 +122,32 @@ dashboards.ui.CashDashboardPage = class CashDashboardPage {
 
 		this.$months.find("[data-month]").on("click", (e) => {
 			this.state.month = String($(e.currentTarget).data("month"));
-			this.render_kpis();
-			this.render_tables();
-			this.render_months();
+			this.load_context();
 		});
 	}
 
 	render_kpis() {
-		const metrics = this.getMetrics();
+		const metrics = this.context.metrics || {};
+		const cashMetric = metrics.cash || { start: 0, inflow: 0, outflow: 0, end: 0 };
+		const bankMetric = metrics.bank || { start: 0, inflow: 0, outflow: 0, end: 0 };
 
-		this.$cashKpi.html(this.getWideKpiMarkup(metrics.cash, "касса"));
-		this.$bankKpi.html(this.getWideKpiMarkup(metrics.bank, "банк"));
-		this.$cashBalance.html(this.getBalanceMarkup(metrics.cash.end, "Остаток касса"));
-		this.$bankBalance.html(this.getBalanceMarkup(metrics.bank.end, "Остаток банк"));
+		this.$cashKpi.html(this.getWideKpiMarkup(cashMetric, "касса"));
+		this.$bankKpi.html(this.getWideKpiMarkup(bankMetric, "банк"));
+		this.$cashBalance.html(this.getBalanceMarkup(cashMetric.end, "Остаток касса"));
+		this.$bankBalance.html(this.getBalanceMarkup(bankMetric.end, "Остаток банк"));
 	}
 
 	render_tables() {
-		const metrics = this.getMetrics();
-		const cashRows = this.getRowsForMonth(this.context.cash_rows || [], metrics.cash.inflow, "cash");
-		const bankRows = this.getRowsForMonth(this.context.bank_rows || [], metrics.bank.inflow, "bank");
+		const metrics = this.context.metrics || {};
+		const cashRows = this.context.cash_rows || [];
+		const bankRows = this.context.bank_rows || [];
 		this.$cashTable.html(this.getTableMarkup(cashRows, metrics.cash, "касса"));
 		this.$bankTable.html(this.getTableMarkup(bankRows, metrics.bank, "банк"));
 	}
 
 	getWideKpiMarkup(metric, label) {
+		metric = metric || { start: 0, inflow: 0, outflow: 0, end: 0 };
+
 		return `
 			<div class="cash-dashboard-kpi-grid">
 				<div class="cash-dashboard-kpi-item">
@@ -166,6 +178,16 @@ dashboards.ui.CashDashboardPage = class CashDashboardPage {
 	}
 
 	getTableMarkup(rows, metric, label) {
+		metric = metric || { inflow: 0, outflow: 0 };
+
+		if (!rows.length) {
+			return `
+				<div class="cash-dashboard-table-empty">
+					${__("No GL Entry data found for the selected period.")}
+				</div>
+			`;
+		}
+
 		return `
 			<table class="cash-dashboard-table">
 				<thead>
@@ -200,64 +222,6 @@ dashboards.ui.CashDashboardPage = class CashDashboardPage {
 		`;
 	}
 
-	getMetrics() {
-		const monthIndex = (this.context.months || []).findIndex((month) => month.key === this.state.month);
-		const monthFactor = 0.72 + (Math.max(monthIndex, 0) * 0.04);
-		const cashBase = this.context.base_kpi?.cash || {};
-		const bankBase = this.context.base_kpi?.bank || {};
-
-		const cash = {
-			start: Math.round((cashBase.start || 0) * (0.94 + monthFactor * 0.08)),
-			target_inflow: Math.round((cashBase.inflow || 0) * monthFactor),
-			target_outflow: Math.round((cashBase.outflow || 0) * (0.71 + Math.max(monthIndex, 0) * 0.039)),
-		};
-		const cashRows = this.getRowsForMonth(this.context.cash_rows || [], cash.target_inflow, "cash");
-		cash.inflow = this.sumField(cashRows, "inflow");
-		cash.outflow = this.sumField(cashRows, "outflow");
-		cash.end = cash.start + cash.inflow - cash.outflow;
-
-		const bank = {
-			start: Math.round((bankBase.start || 0) * (0.82 + monthFactor * 0.05)),
-			target_inflow: Math.round((bankBase.inflow || 0) * monthFactor),
-			target_outflow: Math.round((bankBase.outflow || 0) * (0.74 + Math.max(monthIndex, 0) * 0.033)),
-		};
-		const bankRows = this.getRowsForMonth(this.context.bank_rows || [], bank.target_inflow, "bank");
-		bank.inflow = this.sumField(bankRows, "inflow");
-		bank.outflow = this.sumField(bankRows, "outflow");
-		bank.end = bank.start + bank.inflow - bank.outflow;
-
-		return { cash, bank };
-	}
-
-	getRowsForMonth(rows, salesInflowTarget, key) {
-		const monthIndex = (this.context.months || []).findIndex((month) => month.key === this.state.month);
-		const factor = 0.74 + (Math.max(monthIndex, 0) * 0.037);
-
-		return rows.map((row, index) => {
-			const variance = 1 + ((index % 3) * 0.016);
-			let inflow = Math.round((row.inflow || 0) * factor * variance);
-			let outflow = Math.round((row.outflow || 0) * factor * (0.99 + ((monthIndex + index) % 2) * 0.02));
-
-			if (key === "cash" && row.label === "Продажа") {
-				inflow = salesInflowTarget;
-			}
-
-			if (key === "bank" && row.label === "Продажа") {
-				inflow = salesInflowTarget;
-			}
-
-			return {
-				...row,
-				inflow,
-				outflow,
-			};
-		});
-	}
-
-	sumField(rows, fieldname) {
-		return (rows || []).reduce((total, row) => total + (row[fieldname] || 0), 0);
-	}
-
 	formatInteger(value) {
 		const sign = value < 0 ? "-" : "";
 		const numeric = Math.abs(Math.round(value));
@@ -271,5 +235,15 @@ dashboards.ui.CashDashboardPage = class CashDashboardPage {
 
 		const millions = Math.round(value / 1000000);
 		return `${millions}M`;
+	}
+
+	render_loading() {
+		const loadingMarkup = `<div class="cash-dashboard-table-empty">${__("Loading...")}</div>`;
+		this.$cashKpi.html(loadingMarkup);
+		this.$bankKpi.html(loadingMarkup);
+		this.$cashBalance.html(loadingMarkup);
+		this.$bankBalance.html(loadingMarkup);
+		this.$cashTable.html(loadingMarkup);
+		this.$bankTable.html(loadingMarkup);
 	}
 };

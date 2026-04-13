@@ -1,0 +1,292 @@
+.layout-main-section-wrapper.dividend-analysis-layout {
+	padding: 0;
+	background: #efefef;
+}
+
+.dividend-analysis-page-head {
+	display: none;
+}
+
+.dividend-analysis-screen {
+	padding: 2px 0 16px;
+}
+
+.dividend-analysis-shell {
+	overflow: hidden;
+	background: #f3f3f3;
+	box-shadow: 0 8px 20px rgba(24, 40, 24, 0.1);
+}
+
+.dividend-analysis-hero {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 14px 18px;
+	background: linear-gradient(180deg, #08b34a 0%, #08a947 100%);
+	color: #fff;
+}
+
+.dividend-analysis-brand {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.dividend-analysis-brand-mark {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	border: 2px solid rgba(255, 255, 255, 0.78);
+	border-radius: 999px;
+	background: radial-gradient(circle at 30% 30%, #eef7d9 0%, #7dcf6d 40%, #2d9251 100%);
+	color: #e8fff0;
+	font-size: 14px;
+	font-weight: 800;
+	letter-spacing: 0.06em;
+	box-shadow: inset 0 0 0 1px rgba(19, 92, 43, 0.25);
+}
+
+.dividend-analysis-brand-copy {
+	line-height: 1.15;
+}
+
+.dividend-analysis-title {
+	font-size: 14px;
+	font-weight: 800;
+	letter-spacing: 0.04em;
+}
+
+.dividend-analysis-subtitle {
+	margin-top: 2px;
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+}
+
+.dividend-analysis-info-icon {
+	display: grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	border: 2px solid rgba(255, 255, 255, 0.72);
+	border-radius: 999px;
+	font-size: 22px;
+	font-weight: 500;
+	line-height: 1;
+}
+
+.dividend-analysis-toolbar {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	justify-content: space-between;
+	gap: 24px;
+	padding: 8px 10px 0;
+}
+
+.dividend-analysis-toolbar-title {
+	color: #c1606f;
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.dividend-analysis-toolbar-title--right {
+	text-align: right;
+}
+
+.dividend-analysis-toolbar-meta {
+	padding: 4px 10px 8px;
+	color: #6e7a71;
+	font-size: 11px;
+	text-align: right;
+}
+
+.dividend-analysis-year-pill {
+	padding: 4px 8px;
+	border: 1px solid #cdd8c9;
+	border-radius: 2px;
+	background: #fff;
+	color: #2d7b31;
+	font-size: 11px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.dividend-analysis-year-pill.is-active {
+	border-color: #129842;
+	background: #129842;
+	color: #fff;
+}
+
+.dividend-analysis-year-picker {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 6px;
+}
+
+.dividend-analysis-grid {
+	display: grid;
+	grid-template-columns: minmax(300px, 1fr) minmax(420px, 1.4fr) minmax(300px, 1fr);
+	gap: 10px;
+	padding: 0 10px 12px;
+}
+
+.dividend-analysis-column {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	min-width: 0;
+}
+
+.dividend-analysis-column--center {
+	min-width: 0;
+}
+
+.dividend-analysis-card {
+	border: 1px solid #d8d8d8;
+	border-radius: 0;
+	background: #fff;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.dividend-analysis-card--stretch {
+	height: 100%;
+}
+
+.dividend-analysis-card-head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 12px 0;
+}
+
+.dividend-analysis-card-head-main {
+	min-width: 0;
+}
+
+.dividend-analysis-card-title {
+	color: #2a8238;
+	font-size: 28px;
+	font-weight: 800;
+	line-height: 1;
+}
+
+.dividend-analysis-card-subtitle {
+	margin-top: 4px;
+	color: #8f4452;
+	font-size: 11px;
+	font-weight: 600;
+}
+
+.dividend-analysis-table-wrap {
+	padding: 4px 8px 10px;
+	overflow: auto;
+	max-height: calc(100vh - 220px);
+}
+
+.dividend-analysis-table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: 12px;
+	color: #414141;
+}
+
+.dividend-analysis-table th,
+.dividend-analysis-table td {
+	padding: 3px 8px;
+	border-bottom: 0;
+	white-space: nowrap;
+}
+
+.dividend-analysis-table th {
+	position: sticky;
+	top: 0;
+	background: #fff;
+	color: #249137;
+	font-size: 13px;
+	font-weight: 800;
+	z-index: 1;
+	border-bottom: 1px solid #c8d8c8;
+	text-align: right;
+}
+
+.dividend-analysis-table th:first-child,
+.dividend-analysis-table td:first-child {
+	text-align: left;
+}
+
+.dividend-analysis-table tbody tr:nth-child(even) td {
+	background: #f7f7f7;
+}
+
+.dividend-analysis-table td.is-number {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: #3d8d39;
+}
+
+.dividend-analysis-table tr.is-total td {
+	border-top: 2px solid #d6d6d6;
+	color: #1f1f1f;
+	font-weight: 800;
+	background: #fff;
+}
+
+.dividend-analysis-table-meta {
+	margin-top: 2px;
+	color: #8f988b;
+	font-size: 10px;
+}
+
+.dividend-analysis-table--dense {
+	font-size: 11px;
+}
+
+@media (max-width: 1280px) {
+	.dividend-analysis-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.dividend-analysis-table-wrap {
+		max-height: none;
+	}
+}
+
+@media (max-width: 768px) {
+	.dividend-analysis-screen {
+		padding: 0 0 12px;
+	}
+
+	.dividend-analysis-toolbar {
+		grid-template-columns: 1fr;
+	}
+
+	.dividend-analysis-hero {
+		padding: 12px;
+	}
+
+	.dividend-analysis-brand {
+		align-items: flex-start;
+	}
+
+	.dividend-analysis-toolbar-title--right,
+	.dividend-analysis-toolbar-meta {
+		text-align: left;
+	}
+
+	.dividend-analysis-card-head {
+		flex-direction: column;
+	}
+
+	.dividend-analysis-year-picker {
+		justify-content: flex-start;
+	}
+
+	.dividend-analysis-card-title {
+		font-size: 22px;
+	}
+}

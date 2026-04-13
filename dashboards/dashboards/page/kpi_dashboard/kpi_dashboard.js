@@ -77,6 +77,11 @@ dashboards.ui.KPIDashboardPage = class KPIDashboardPage {
 			</div>
 		`);
 
+		dashboards.ui.setupDashboardSidebar({
+			page: this.page,
+			route: "kpi-dashboard",
+		});
+
 		this.$years = this.page.main.find('[data-region="years"]');
 		this.$months = this.page.main.find('[data-region="months"]');
 		this.$kpis = this.page.main.find('[data-region="kpis"]');

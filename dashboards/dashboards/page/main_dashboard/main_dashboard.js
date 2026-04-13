@@ -64,6 +64,11 @@ dashboards.ui.MainDashboardPage = class MainDashboardPage {
 			</div>
 		`);
 
+		dashboards.ui.setupDashboardSidebar({
+			page: this.page,
+			route: "main-dashboard",
+		});
+
 		this.$tabs = this.page.main.find('[data-region="tabs"]');
 		this.$mainChart = this.page.main.find('[data-region="main-chart"]');
 		this.$miniChart = this.page.main.find('[data-region="mini-chart"]');

@@ -13,7 +13,7 @@
 
 .sales-dashboard-shell {
 	min-height: calc(100vh - 110px);
-	padding: 10px 8px 0;
+	padding: 10px 0 0;
 	background:
 		radial-gradient(circle at 50% 26%, rgba(243, 255, 229, 0.98) 0%, rgba(220, 249, 191, 0.9) 24%, rgba(192, 242, 154, 0.76) 56%, rgba(180, 236, 147, 0.82) 100%),
 		linear-gradient(180deg, #dff9cd 0%, #c6f3ae 100%);
@@ -26,14 +26,14 @@
 }
 
 .sales-dashboard-filters--years {
-	margin: 0 0 10px;
+	margin: 0 10px 10px;
 }
 
 .sales-dashboard-filters--months {
 	display: grid;
 	grid-template-columns: repeat(12, minmax(0, 1fr));
 	gap: 10px;
-	margin: 0 0 12px;
+	margin: 0 10px 12px;
 }
 
 .sales-dashboard-chip {
@@ -80,7 +80,8 @@
 
 .sales-dashboard-table-panel {
 	width: min(100%, 740px);
-	margin-left: auto;
+	margin: 0;
+	transform: translateX(450px);
 	border: 1px solid rgba(102, 151, 94, 0.66);
 	border-radius: 10px;
 	background: linear-gradient(180deg, rgba(223, 252, 194, 0.72) 0%, rgba(206, 246, 172, 0.8) 100%);
@@ -90,6 +91,13 @@
 .sales-dashboard-table-wrap {
 	max-height: calc(100vh - 190px);
 	overflow: auto;
+}
+
+.sales-dashboard-table-empty {
+	padding: 24px 18px;
+	color: #355237;
+	font-size: 13px;
+	font-weight: 600;
 }
 
 .sales-dashboard-table {
@@ -155,5 +163,6 @@
 
 	.sales-dashboard-table-panel {
 		width: 100%;
+		transform: none;
 	}
 }

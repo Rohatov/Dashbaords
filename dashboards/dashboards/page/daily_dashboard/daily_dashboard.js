@@ -58,6 +58,11 @@ dashboards.ui.DailyDashboardPage = class DailyDashboardPage {
 			</div>
 		`);
 
+		dashboards.ui.setupDashboardSidebar({
+			page: this.page,
+			route: "daily-dashboard",
+		});
+
 		this.$titlePrimary = this.page.main.find('[data-region="title-primary"]');
 		this.$titleSecondary = this.page.main.find('[data-region="title-secondary"]');
 		this.$years = this.page.main.find('[data-region="years"]');

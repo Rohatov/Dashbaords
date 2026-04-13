@@ -1,69 +1,115 @@
 from __future__ import annotations
 
+from typing import Any
+
 import frappe
+from frappe.utils import flt, getdate, today
+
+from dashboards.dashboards.dashboard_data import MONTH_LABELS
 
 
-YEARS = ["2021", "2023", "2024", "2025"]
+MONTHS = [{"key": label.lower(), "label": label} for label in MONTH_LABELS]
+MONTH_MAP = {item["key"]: index + 1 for index, item in enumerate(MONTHS)}
 
-MONTHS = [
-    {"key": "january", "label": "January"},
-    {"key": "february", "label": "February"},
-    {"key": "march", "label": "March"},
-    {"key": "april", "label": "April"},
-    {"key": "may", "label": "May"},
-    {"key": "june", "label": "June"},
-    {"key": "july", "label": "July"},
-    {"key": "august", "label": "August"},
-    {"key": "september", "label": "September"},
-    {"key": "october", "label": "October"},
-    {"key": "november", "label": "November"},
-    {"key": "december", "label": "December"},
-]
 
-PRODUCT_ROWS = [
-    {"item": "Рулет из мяса птицы коп-вар 0,5", "kg": 9384, "sales": 352204587, "cost": 256208622},
-    {"item": "Рулет \"YANGLIK\" коп-вар 0,5", "kg": 6987, "sales": 259713545, "cost": 189312176},
-    {"item": "Деликатесная 1-сорт", "kg": 5375, "sales": 211729375, "cost": 146761816},
-    {"item": "Докторская особая 1 сорт А", "kg": 4217, "sales": 100148710, "cost": 84613901},
-    {"item": "Для завтрака 1 сорт", "kg": 3684, "sales": 85094057, "cost": 71393790},
-    {"item": "Сосиски Полоска А", "kg": 3125, "sales": 67269679, "cost": 55419257},
-    {"item": "П/к. \"Сервелат\" Говяжий д-50", "kg": 3037, "sales": 109534092, "cost": 84833918},
-    {"item": "П/к. \"Rokiza\" Таллинская", "kg": 1770, "sales": 61866910, "cost": 43379568},
-    {"item": "П/к. \"Buxanov\" Чимкентская А", "kg": 1613, "sales": 39221754, "cost": 34673579},
-    {"item": "П/к. \"Buxanov\" Жорж", "kg": 1535, "sales": 35917684, "cost": 32547775},
-    {"item": "Сосиски Тигровый А", "kg": 1444, "sales": 32942199, "cost": 24635559},
-    {"item": "Для завтрака 2 сорт 2022", "kg": 1303, "sales": 25423662, "cost": 20519194},
-    {"item": "П/к. \"Buxanov\" KO 6", "kg": 1006, "sales": 34382320, "cost": 27522354},
-    {"item": "П/к. \"Rokiza\" Ари уг", "kg": 990, "sales": 38033223, "cost": 27397462},
-    {"item": "П/к. \"Buxanov\" Украинская", "kg": 926, "sales": 31303244, "cost": 19912045},
-    {"item": "П/к. \"Rokiza\" Барака", "kg": 904, "sales": 31035028, "cost": 23459704},
-    {"item": "П/к. \"Rokiza\" Таллинская (Особая)", "kg": 901, "sales": 34092819, "cost": 24945280},
-    {"item": "Говядина (Премиум) тушенка 325 гр.", "kg": 866, "sales": 28001480, "cost": 15662522},
-    {"item": "П/к. \"Buxanov\" Чесночная", "kg": 861, "sales": 20467470, "cost": 17728360},
-    {"item": "П/к. \"Кука\" Сервелат д-65", "kg": 797, "sales": 30365370, "cost": 21620716},
-    {"item": "Докторская особая Д", "kg": 777, "sales": 23165689, "cost": 14970798},
-    {"item": "П/к. \"Buxanov\" Городская", "kg": 760, "sales": 22684553, "cost": 18051991},
-    {"item": "П/к. \"Buxanov\" Московская Д-40 (ЖД)", "kg": 750, "sales": 18439495, "cost": 15441760},
-    {"item": "П/к. \"Rokiza\" \"особая\"", "kg": 731, "sales": 24785344, "cost": 17362893},
-    {"item": "Для завтрака Ишонч", "kg": 615, "sales": 14351128, "cost": 11927067},
-    {"item": "Дорожная Золота", "kg": 533, "sales": 11185389, "cost": 10686086},
-    {"item": "П/к. \"Buxanov\" Мазали Г", "kg": 520, "sales": 16947320, "cost": 12475840},
-    {"item": "Сосиски уважли А 1", "kg": 500, "sales": 9457560, "cost": 8987184},
-    {"item": "Сосиски Полоска А (газовый)", "kg": 489, "sales": 11619994, "cost": 8350632},
-    {"item": "П/к. \"Rokiza\" Крак", "kg": 486, "sales": 17017573, "cost": 10462738},
-    {"item": "П/к. \"Rokiza\" Венгерская д-45", "kg": 478, "sales": 15229335, "cost": 12308866},
-    {"item": "П/к. \"Rokiza\" Сервелат A", "kg": 470, "sales": 13985028, "cost": 10519290},
-]
+def _get_years() -> list[str]:
+	rows = frappe.db.sql(
+		"""
+		SELECT DISTINCT YEAR(posting_date) AS year
+		FROM `tabSales Invoice`
+		WHERE docstatus = 1
+		  AND COALESCE(is_return, 0) = 0
+		  AND posting_date IS NOT NULL
+		ORDER BY year
+		""",
+		as_dict=True,
+	)
+
+	years = [str(row.year) for row in rows if row.year]
+	if years:
+		return years
+
+	return [str(getdate(today()).year)]
+
+
+def _get_default_period() -> tuple[str, str]:
+	latest_row = frappe.db.sql(
+		"""
+		SELECT MAX(posting_date) AS posting_date
+		FROM `tabSales Invoice`
+		WHERE docstatus = 1
+		  AND COALESCE(is_return, 0) = 0
+		""",
+		as_dict=True,
+	)[0]
+
+	reference_date = getdate(latest_row.posting_date) if latest_row.posting_date else getdate(today())
+	return str(reference_date.year), MONTH_LABELS[reference_date.month - 1].lower()
+
+
+def _normalize_filters(year: str | None, month: str | None) -> tuple[str, str]:
+	years = _get_years()
+	default_year, default_month = _get_default_period()
+	selected_year = year if year in years else default_year
+	selected_month = month if month in MONTH_MAP else default_month
+	return selected_year, selected_month
+
+
+def _get_product_rows(year: str, month: str) -> list[dict[str, Any]]:
+	rows = frappe.db.sql(
+		"""
+		SELECT
+			COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item') AS item,
+			SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS kg,
+			SUM(COALESCE(sii.base_net_amount, sii.net_amount, sii.base_amount, sii.amount, 0)) AS sales,
+			SUM(COALESCE(sii.stock_qty, sii.qty, 0) * COALESCE(sii.incoming_rate, 0)) AS cost,
+			SUM(COALESCE(sii.discount_amount, 0) + COALESCE(sii.distributed_discount_amount, 0)) AS rsp
+		FROM `tabSales Invoice` si
+		INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
+		WHERE si.docstatus = 1
+		  AND COALESCE(si.is_return, 0) = 0
+		  AND YEAR(si.posting_date) = %(year)s
+		  AND MONTH(si.posting_date) = %(month)s
+		GROUP BY COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item')
+		ORDER BY sales DESC, item ASC
+		""",
+		{"year": int(year), "month": int(MONTH_MAP[month])},
+		as_dict=True,
+	)
+
+	result = []
+	for row in rows:
+		sales = flt(row.sales)
+		cost = flt(row.cost)
+		margin = sales - cost
+		rsp = flt(row.rsp)
+		profit = margin - rsp
+		result.append(
+			{
+				"item": row.item,
+				"kg": round(flt(row.kg)),
+				"sales": round(sales),
+				"cost": round(cost),
+				"margin": round(margin),
+				"rsp": round(rsp),
+				"margin_percent": (margin / sales * 100) if sales else 0,
+				"profit": round(profit),
+			}
+		)
+
+	return result
 
 
 @frappe.whitelist()
-def get_dashboard_context():
-    return {
-        "default_filters": {
-            "year": "2024",
-            "month": "december",
-        },
-        "years": YEARS,
-        "months": MONTHS,
-        "product_rows": PRODUCT_ROWS,
-    }
+def get_dashboard_context(year: str | None = None, month: str | None = None):
+	selected_year, selected_month = _normalize_filters(year, month)
+
+	return {
+		"default_filters": {
+			"year": selected_year,
+			"month": selected_month,
+		},
+		"years": _get_years(),
+		"months": MONTHS,
+		"product_rows": _get_product_rows(selected_year, selected_month),
+	}

@@ -39,14 +39,25 @@ dashboards.ui.SalesDashboardPage = class SalesDashboardPage {
 			</div>
 		`);
 
+		dashboards.ui.setupDashboardSidebar({
+			page: this.page,
+			route: "sales-dashboard",
+		});
+
 		this.$years = this.page.main.find('[data-region="years"]');
 		this.$months = this.page.main.find('[data-region="months"]');
 		this.$table = this.page.main.find('[data-region="table"]');
 	}
 
 	load_context() {
+		this.render_loading();
+
 		frappe.call({
 			method: "dashboards.dashboards.page.sales_dashboard.sales_dashboard.get_dashboard_context",
+			args: {
+				year: this.state.year,
+				month: this.state.month,
+			},
 			callback: (r) => {
 				this.context = r.message || {};
 				this.state = { ...(this.context.default_filters || {}) };
@@ -78,8 +89,7 @@ dashboards.ui.SalesDashboardPage = class SalesDashboardPage {
 
 		this.$years.find("[data-year]").on("click", (e) => {
 			this.state.year = String($(e.currentTarget).data("year"));
-			this.render_table();
-			this.render_years();
+			this.load_context();
 		});
 	}
 
@@ -99,15 +109,23 @@ dashboards.ui.SalesDashboardPage = class SalesDashboardPage {
 
 		this.$months.find("[data-month]").on("click", (e) => {
 			this.state.month = String($(e.currentTarget).data("month"));
-			this.render_table();
-			this.render_months();
+			this.load_context();
 		});
 	}
 
 	render_table() {
-		const rows = this.getRowsForFilters();
+		const rows = this.context.product_rows || [];
 		const total = this.buildTotalRow(rows);
 		const headers = ["Предметы", "КГ", "Сумма.прод", "Сумма себест", "Маржа", "РСП сумма", "рен", "Прибыль"];
+
+		if (!rows.length) {
+			this.$table.html(`
+				<div class="sales-dashboard-table-empty">
+					${__("No submitted Sales Invoice data found for the selected period.")}
+				</div>
+			`);
+			return;
+		}
 
 		this.$table.html(`
 			<table class="sales-dashboard-table">
@@ -146,39 +164,6 @@ dashboards.ui.SalesDashboardPage = class SalesDashboardPage {
 		`);
 	}
 
-	getRowsForFilters() {
-		const baseRows = this.context.product_rows || [];
-		const yearFactorMap = {
-			"2021": 0.82,
-			"2023": 0.93,
-			"2024": 1,
-			"2025": 1.06,
-		};
-		const monthIndex = (this.context.months || []).findIndex((month) => month.key === this.state.month);
-		const monthFactor = 0.7 + (Math.max(monthIndex, 0) * 0.028);
-		const factor = (yearFactorMap[this.state.year] || 1) * monthFactor;
-
-		return baseRows.map((row, rowIndex) => {
-			const variance = 1 + ((rowIndex % 5) * 0.012);
-			const kg = Math.round(row.kg * factor * variance);
-			const sales = Math.round(row.sales * factor * variance);
-			const cost = Math.round(row.cost * factor * (0.988 + ((rowIndex + monthIndex) % 4) * 0.011));
-			const margin = sales - cost;
-			const rsp = Math.round(margin * (0.34 + ((rowIndex + 1) % 3) * 0.03));
-			const profit = margin - rsp;
-			return {
-				item: row.item,
-				kg: kg,
-				sales: sales,
-				cost: cost,
-				margin: margin,
-				rsp: rsp,
-				margin_percent: sales ? (margin / sales) * 100 : 0,
-				profit: profit,
-			};
-		});
-	}
-
 	buildTotalRow(rows) {
 		const total = rows.reduce(
 			(accumulator, row) => {
@@ -205,5 +190,9 @@ dashboards.ui.SalesDashboardPage = class SalesDashboardPage {
 
 	formatPercent(value) {
 		return `${Number(value || 0).toFixed(1).replace(".", ",")}%`;
+	}
+
+	render_loading() {
+		this.$table.html(`<div class="sales-dashboard-table-empty">${__("Loading...")}</div>`);
 	}
 };

@@ -1,0 +1,151 @@
+.layout-main-section-wrapper.comparison-by-amount-layout {
+	padding: 0;
+	background: #efefef;
+	margin-top: 20px;
+}
+
+.comparison-by-amount-page-head {
+	display: none;
+}
+
+.comparison-by-amount-screen {
+	padding: 0 0 12px;
+}
+
+.comparison-by-amount-shell {
+	margin: 0 8px;
+	background: #f7f7f7;
+}
+
+.comparison-by-amount-months {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(68px, 1fr));
+	gap: 8px;
+	padding: 10px 12px 8px;
+}
+
+.comparison-by-amount-month {
+	padding: 4px 10px;
+	border: 1px solid #4e4e4e;
+	border-radius: 4px;
+	background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+	color: #4a4a4a;
+	font-size: 12px;
+	line-height: 1.1;
+}
+
+.comparison-by-amount-month.is-active {
+	border-color: #3f8d38;
+	background: linear-gradient(180deg, #7af36d 0%, #53dc4a 100%);
+	color: #fff;
+}
+
+.comparison-by-amount-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+	gap: 8px;
+}
+
+.comparison-by-amount-panel {
+	min-width: 0;
+	border-top: 1px solid #dedede;
+	border-left: 1px solid #dedede;
+	border-right: 1px solid #dedede;
+	background: #fff;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.comparison-by-amount-table-wrap {
+	overflow: auto;
+	max-height: 560px;
+}
+
+.comparison-by-amount-table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: 12px;
+	color: #4a4a4a;
+	background: #fff;
+}
+
+.comparison-by-amount-table th,
+.comparison-by-amount-table td {
+	padding: 2px 6px;
+	border-right: 1px solid #cfeecf;
+	white-space: nowrap;
+}
+
+.comparison-by-amount-table th:last-child,
+.comparison-by-amount-table td:last-child {
+	border-right: 0;
+}
+
+.comparison-by-amount-table th {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background: #fff;
+	color: #27a032;
+	font-size: 12px;
+	font-weight: 800;
+	text-align: center;
+}
+
+.comparison-by-amount-table--items thead tr:nth-child(2) th {
+	top: 24px;
+	z-index: 3;
+}
+
+.comparison-by-amount-name {
+	background: #fff;
+	text-align: center;
+}
+
+.comparison-by-amount-name--customer {
+	min-width: 210px;
+}
+
+.comparison-by-amount-name--item {
+	min-width: 230px;
+}
+
+.comparison-by-amount-name-cell {
+	color: #5a5a5a;
+	text-align: left;
+}
+
+.comparison-by-amount-table td.is-number {
+	color: #32933a;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+.comparison-by-amount-table tr.is-total td {
+	color: #2c2c2c;
+	font-weight: 800;
+}
+
+.comparison-by-amount-table tr.is-total td.is-number {
+	color: #2c2c2c;
+}
+
+@media (max-width: 1280px) {
+	.comparison-by-amount-months {
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+	}
+
+	.comparison-by-amount-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.comparison-by-amount-table-wrap {
+		max-height: none;
+	}
+}
+
+@media (max-width: 768px) {
+	.comparison-by-amount-months {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
