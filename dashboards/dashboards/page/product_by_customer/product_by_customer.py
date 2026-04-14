@@ -86,9 +86,6 @@ def _resolve_selected_customer(requested_customer: str | None, customer_options:
     if requested_customer and any(option["value"] == requested_customer for option in customer_options):
         return requested_customer
 
-    if customer_options:
-        return customer_options[0]["value"]
-
     return None
 
 
@@ -105,11 +102,17 @@ def _get_product_rows(
     selected_customer: str | None,
     item_limit: int = 28,
 ) -> list[dict[str, Any]]:
-    if not years or not month_numbers or not selected_customer:
+    if not years or not month_numbers:
         return []
 
     year_sql = ", ".join(str(int(year)) for year in years)
     month_sql = ", ".join(str(int(month_no)) for month_no in month_numbers)
+
+    customer_condition = ""
+    query_values: dict[str, Any] = {}
+    if selected_customer:
+        customer_condition = "AND si.customer = %(customer)s"
+        query_values["customer"] = selected_customer
 
     rows = frappe.db.sql(
         f"""
@@ -122,13 +125,13 @@ def _get_product_rows(
         INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
         WHERE si.docstatus = 1
           AND COALESCE(si.is_return, 0) = 0
-          AND si.customer = %(customer)s
+          {customer_condition}
           AND YEAR(si.posting_date) IN ({year_sql})
           AND MONTH(si.posting_date) IN ({month_sql})
         GROUP BY MONTH(si.posting_date), YEAR(si.posting_date), COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item')
         ORDER BY MONTH(si.posting_date), item_label, YEAR(si.posting_date)
         """,
-        {"customer": selected_customer},
+        query_values,
         as_dict=True,
     )
 

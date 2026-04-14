@@ -1,6 +1,8 @@
 .layout-main-section-wrapper.sales-dashboard-layout {
 	padding: 0;
 	background: #d8f3c8;
+	margin-top: 15px;
+	border-radius: 10px;
 }
 
 .sales-dashboard-page-head {
@@ -17,6 +19,7 @@
 	background:
 		radial-gradient(circle at 50% 26%, rgba(243, 255, 229, 0.98) 0%, rgba(220, 249, 191, 0.9) 24%, rgba(192, 242, 154, 0.76) 56%, rgba(180, 236, 147, 0.82) 100%),
 		linear-gradient(180deg, #dff9cd 0%, #c6f3ae 100%);
+	border-radius: 10px;
 }
 
 .sales-dashboard-filters {

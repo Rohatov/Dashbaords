@@ -37,6 +37,11 @@ dashboards.ui.ProductComparisonPage = class ProductComparisonPage {
 			</div>
 		`);
 
+		dashboards.ui.setupDashboardSidebar({
+			page: this.page,
+			route: "product-comparison",
+		});
+
 		this.$title = this.page.main.find('[data-region="title"]');
 		this.$subtitle = this.page.main.find('[data-region="subtitle"]');
 		this.$meta = this.page.main.find('[data-region="meta"]');

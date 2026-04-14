@@ -2,6 +2,7 @@
 	padding: 0;
 	background:
 		linear-gradient(180deg, #f9faf8 0%, #edf1ed 100%);
+	padding-top: 10px;
 }
 
 .kpi-dashboard-page-head {

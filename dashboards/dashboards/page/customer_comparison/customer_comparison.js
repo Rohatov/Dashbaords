@@ -37,6 +37,11 @@ dashboards.ui.CustomerComparisonPage = class CustomerComparisonPage {
 			</div>
 		`);
 
+		dashboards.ui.setupDashboardSidebar({
+			page: this.page,
+			route: "customer-comparison",
+		});
+
 		this.$title = this.page.main.find('[data-region="title"]');
 		this.$subtitle = this.page.main.find('[data-region="subtitle"]');
 		this.$meta = this.page.main.find('[data-region="meta"]');

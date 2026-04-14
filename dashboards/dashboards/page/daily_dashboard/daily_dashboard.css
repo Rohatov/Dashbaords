@@ -1,6 +1,7 @@
 .layout-main-section-wrapper.daily-dashboard-layout {
 	padding: 0;
 	background: #f2f3f5;
+	margin-top: 15px;
 }
 
 .daily-dashboard-page-head {
@@ -14,7 +15,6 @@
 .daily-dashboard-shell {
 	margin: 0 auto;
 	border-top: 1px solid #188b34;
-	border-bottom: 2px dotted #6d6d6d;
 	background: #f7f7f8;
 }
 

@@ -241,7 +241,9 @@
 	display: flex;
 	gap: 48px;
 	width: max-content;
-	animation: main-dashboard-ticker-scroll 22s linear infinite;
+	--ticker-distance: 0px;
+	--ticker-duration: 18s;
+	animation: main-dashboard-ticker-scroll var(--ticker-duration) linear infinite;
 	will-change: transform;
 }
 
@@ -358,10 +360,10 @@
 
 @keyframes main-dashboard-ticker-scroll {
 	from {
-		transform: translateX(100%);
+		transform: translateX(0);
 	}
 
 	to {
-		transform: translateX(calc(-50% - 24px));
+		transform: translateX(calc(-1 * var(--ticker-distance)));
 	}
 }

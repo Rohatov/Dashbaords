@@ -188,6 +188,38 @@ dashboards.ui.MainDashboardPage = class MainDashboardPage {
 				<div class="main-dashboard-footer-group" aria-hidden="true">${groupMarkup}</div>
 			</div>
 		`);
+
+		this.setup_footer_ticker(items, renderItem);
+	}
+
+	setup_footer_ticker(items, renderItem) {
+		window.requestAnimationFrame(() => {
+			const $track = this.$footerTicker.find(".main-dashboard-footer-track");
+			const $groups = $track.find(".main-dashboard-footer-group");
+			if (!$track.length || !$groups.length) {
+				return;
+			}
+
+			const containerWidth = this.$footerTicker.innerWidth() || 0;
+			let groupWidth = $groups.first().outerWidth(true) || 0;
+
+			if (containerWidth && groupWidth && groupWidth < containerWidth * 1.25) {
+				const repeatCount = Math.max(2, Math.ceil((containerWidth * 1.25) / groupWidth));
+				const repeatedMarkup = Array.from({ length: repeatCount }, () => items)
+					.flat()
+					.map(renderItem)
+					.join("");
+
+				$groups.html(repeatedMarkup);
+				groupWidth = $groups.first().outerWidth(true) || groupWidth;
+			}
+
+			const pixelsPerSecond = 110;
+			const durationSeconds = Math.max(groupWidth / pixelsPerSecond, 8);
+
+			$track.css("--ticker-distance", `${groupWidth}px`);
+			$track.css("--ticker-duration", `${durationSeconds}s`);
+		});
 	}
 
 	render_widgets() {

@@ -39,6 +39,11 @@ dashboards.ui.ProductByCustomerPage = class ProductByCustomerPage {
 			</div>
 		`);
 
+		dashboards.ui.setupDashboardSidebar({
+			page: this.page,
+			route: "product-by-customer",
+		});
+
 		this.$customers = this.page.main.find('[data-region="customers"]');
 		this.$title = this.page.main.find('[data-region="title"]');
 		this.$subtitle = this.page.main.find('[data-region="subtitle"]');
@@ -83,11 +88,17 @@ dashboards.ui.ProductByCustomerPage = class ProductByCustomerPage {
 		}
 
 		this.$customers.html(
-			customers
+			[
+				{
+					value: "",
+					label: __("All Customers"),
+				},
+				...customers,
+			]
 				.map(
 					(customer) => `
 						<button
-							class="product-by-customer-pill ${customer.value === this.selectedCustomer ? "is-active" : ""}"
+							class="product-by-customer-pill ${String(customer.value || "") === String(this.selectedCustomer || "") ? "is-active" : ""}"
 							data-customer="${frappe.utils.escape_html(customer.value)}"
 							title="${frappe.utils.escape_html(customer.label)}"
 						>
@@ -99,8 +110,8 @@ dashboards.ui.ProductByCustomerPage = class ProductByCustomerPage {
 		);
 
 		this.$customers.find(".product-by-customer-pill").on("click", (e) => {
-			const customer = $(e.currentTarget).data("customer");
-			if (customer && customer !== this.selectedCustomer) {
+			const customer = $(e.currentTarget).data("customer") || null;
+			if (customer !== this.selectedCustomer) {
 				this.load_context(customer);
 			}
 		});
@@ -109,7 +120,7 @@ dashboards.ui.ProductByCustomerPage = class ProductByCustomerPage {
 	render_meta() {
 		const years = (this.context.years || []).join(", ");
 		const reference = [this.context.reference_month, this.context.reference_year].filter(Boolean).join(" ");
-		const customer = this.context.selected_customer_label || "-";
+		const customer = this.context.selected_customer_label || __("All Customers");
 
 		this.$meta.html(`
 			<div class="product-by-customer-meta-line">${__("Customer")}: ${frappe.utils.escape_html(customer)}</div>
@@ -120,20 +131,11 @@ dashboards.ui.ProductByCustomerPage = class ProductByCustomerPage {
 
 	render_months() {
 		const months = this.context.months || [];
-		if (!this.selectedCustomer) {
-			this.$content.html(`
-				<div class="product-by-customer-empty">
-					<div class="product-by-customer-empty-title">${__("Select a customer")}</div>
-				</div>
-			`);
-			return;
-		}
-
 		if (!months.length || !months.some((month) => (month.items || []).length)) {
 			this.$content.html(`
 				<div class="product-by-customer-empty">
 					<div class="product-by-customer-empty-title">${__("No product data found")}</div>
-					<div class="product-by-customer-empty-copy">${__("The selected customer has no comparison data for the current period.")}</div>
+					<div class="product-by-customer-empty-copy">${__("No comparison data is available for the current period.")}</div>
 				</div>
 			`);
 			return;

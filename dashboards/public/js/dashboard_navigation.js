@@ -12,11 +12,15 @@ frappe.provide("dashboards.ui");
 		{ label: __("Продажа"), route: "sales-dashboard" },
 		{ label: __("Касса"), route: "cash-dashboard" },
 		{ label: __("Клиент"), route: "client-dashboard" },
+		{ label: __("Срав. по товар"), route: "comparison-by-product" },
 		{ label: __("Дивиденд"), route: "dividend-analysis" },
 		{ label: __("Поставщик"), route: "supplier-dashboard" },
 		{ label: __("Анализ по месяц"), route: "monthly-analysis" },
 		{ label: __("Срав. по кг"), route: "comparison-by-weight" },
 		{ label: __("Срав. по сумма"), route: "comparison-by-amount" },
+		{ label: __("Срав. продукт"), route: "product-comparison" },
+		{ label: __("Срав. клиент"), route: "customer-comparison" },
+		{ label: __("Срав. продукт по клиент"), route: "product-by-customer" },
 	];
 
 	function readBool(key, defaultValue) {

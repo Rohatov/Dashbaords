@@ -172,6 +172,8 @@
 	padding: 2px 4px;
 	color: #19912a;
 	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .dashboard-page-table .is-text {

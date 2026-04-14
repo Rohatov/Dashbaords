@@ -220,7 +220,13 @@ dashboards.ui.PageDashboardPage = class PageDashboardPage {
 									${row.values
 										.map((value, index) => {
 											const alignClass = index === 0 ? "is-text" : "is-number";
-											return `<td class="${alignClass}">${frappe.utils.escape_html(String(value))}</td>`;
+											const rawValue = String(value ?? "");
+											const cellValue = key === "client-kpi" && index === 0 ? this.shorten_label(rawValue, 22) : rawValue;
+											const titleAttr =
+												key === "client-kpi" && index === 0
+													? ` title="${frappe.utils.escape_html(rawValue)}"`
+													: "";
+											return `<td class="${alignClass}"${titleAttr}>${frappe.utils.escape_html(cellValue)}</td>`;
 										})
 										.join("")}
 								</tr>
@@ -230,6 +236,14 @@ dashboards.ui.PageDashboardPage = class PageDashboardPage {
 				</tbody>
 			</table>
 		`);
+	}
+
+	shorten_label(value, maxLength = 22) {
+		if (!value || value.length <= maxLength) {
+			return value;
+		}
+
+		return `${value.slice(0, Math.max(maxLength - 1, 1)).trimEnd()}…`;
 	}
 
 	render_charts() {
