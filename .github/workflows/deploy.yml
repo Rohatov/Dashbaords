@@ -1,0 +1,202 @@
+# ============================================
+# FRAPPE APP AUTO-DEPLOYMENT WORKFLOW
+# ============================================
+#
+# Required GitHub Actions secrets:
+# - SERVER_IP
+# - SSH_PRIVATE_KEY
+# - SITE_NAME
+#
+# This workflow updates an existing Frappe installation only.
+# Fresh server provisioning must be done outside this app repository.
+#
+# ============================================
+
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  FRAPPE_VERSION: "version-15"
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+  BENCH_PATH: "/home/frappe/frappe-bench"
+  APP_NAME: "dashboards"
+
+jobs:
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+
+    steps:
+      # ============================================
+      # 1. CODE CHECKOUT
+      # ============================================
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ============================================
+      # 2. SETUP SSH
+      # ============================================
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      # ============================================
+      # 3. VALIDATE SECRETS
+      # ============================================
+      - name: Validate Configuration
+        run: |
+          if [ -z "${{ secrets.SERVER_IP }}" ]; then
+            echo "ERROR: SERVER_IP secret not set!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SITE_NAME }}" ]; then
+            echo "ERROR: SITE_NAME secret not set!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "ERROR: SSH_PRIVATE_KEY secret not set!"
+            exit 1
+          fi
+          echo "All required secrets are configured"
+
+      # ============================================
+      # 4. CHECK IF DEPLOYMENT EXISTS
+      # ============================================
+      - name: Check Deployment Status
+        id: check_deploy
+        run: |
+          if ssh root@${{ secrets.SERVER_IP }} "[ -d ${{ env.BENCH_PATH }} ]"; then
+            echo "deployment_exists=true" >> $GITHUB_OUTPUT
+            echo "Existing deployment found - will update"
+          else
+            echo "deployment_exists=false" >> $GITHUB_OUTPUT
+            echo "No deployment found - fresh install is not supported by this workflow"
+          fi
+
+      # ============================================
+      # 5A. FRESH DEPLOYMENT
+      # ============================================
+      - name: Fresh Deployment
+        if: steps.check_deploy.outputs.deployment_exists == 'false'
+        run: |
+          echo "ERROR: Fresh deployment not supported!"
+          echo ""
+          echo "This workflow is for updating existing Frappe installations only."
+          echo "First provision the server and install the app, then use this workflow for updates."
+          exit 1
+
+      # ============================================
+      # 5B. UPDATE EXISTING DEPLOYMENT
+      # ============================================
+      - name: Update Existing Deployment
+        if: steps.check_deploy.outputs.deployment_exists == 'true'
+        run: |
+          echo "Updating existing deployment..."
+          echo "App name: ${{ env.APP_NAME }}"
+
+          ssh root@${{ secrets.SERVER_IP }} << ENDSSH
+            su - frappe << 'FRAPPE_EOF'
+          export SITE_NAME="${{ secrets.SITE_NAME }}"
+          export BENCH_PATH="${{ env.BENCH_PATH }}"
+          export APP_NAME="${{ env.APP_NAME }}"
+          export BRANCH_NAME="${{ github.ref_name }}"
+
+          set -e
+          cd \${BENCH_PATH}
+
+          echo "Pulling latest code for \${APP_NAME}..."
+          cd apps/\${APP_NAME}
+
+          REMOTE_NAME=\$(git remote | head -1)
+          echo "Using remote: \${REMOTE_NAME}"
+
+          git fetch \${REMOTE_NAME}
+          git reset --hard \${REMOTE_NAME}/\${BRANCH_NAME}
+
+          echo "Code updated to latest commit:"
+          git log -1 --oneline
+
+          cd \${BENCH_PATH}
+
+          # Keep this aligned with armada: do not run bench setup requirements on every deploy.
+          # If a new dependency is added, install it manually on the server.
+
+          echo "Building frontend assets..."
+          bench build --app \${APP_NAME}
+
+          echo "Running database migrations..."
+          bench --site \${SITE_NAME} migrate
+
+          echo "Clearing cache..."
+          bench --site \${SITE_NAME} clear-cache
+          bench --site \${SITE_NAME} clear-website-cache
+
+          echo "Frappe user tasks completed!"
+          FRAPPE_EOF
+
+          echo "Restarting services..."
+          nohup bash -c 'sleep 2 && supervisorctl restart all && systemctl reload nginx' &>/dev/null &
+          sleep 3
+
+          echo "Deployment updated successfully!"
+          ENDSSH
+
+      # ============================================
+      # 6. HEALTH CHECK
+      # ============================================
+      - name: Health Check
+        run: |
+          echo "Running health check..."
+          sleep 10
+
+          SITE_URL="http://${{ secrets.SERVER_IP }}"
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" $SITE_URL || echo "000")
+
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "301" ] || [ "$HTTP_CODE" = "302" ]; then
+            echo "Site is accessible. HTTP $HTTP_CODE"
+          else
+            echo "Warning: Site returned HTTP $HTTP_CODE"
+          fi
+
+          ssh root@${{ secrets.SERVER_IP }} << 'ENDSSH'
+            echo "Service Status:"
+            supervisorctl status | head -5
+
+            echo ""
+            echo "Disk Usage:"
+            df -h / | tail -1
+
+            echo ""
+            echo "Memory Usage:"
+            free -h | grep Mem
+          ENDSSH
+
+      # ============================================
+      # 7. NOTIFICATIONS
+      # ============================================
+      - name: Send Success Notification
+        if: success()
+        run: |
+          echo "Deployment successful!"
+          echo "Site: http://${{ secrets.SERVER_IP }}"
+          echo "App: ${{ env.APP_NAME }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Author: ${{ github.actor }}"
+
+      - name: Send Failure Notification
+        if: failure()
+        run: |
+          echo "Deployment failed!"
+          echo "Check logs above for details."
