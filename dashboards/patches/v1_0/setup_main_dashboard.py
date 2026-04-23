@@ -15,6 +15,18 @@ MAIN_NUMBER_CARDS = [
     ("Main Dashboard Dividend Total", "dashboards.dashboards.page.main_dashboard.data.get_dividend_total", "#ff6d87"),
 ]
 
+MAIN_NUMBER_CARD_LABELS = {
+    "Main Dashboard Sales Amount": "Сумма продаж",
+    "Main Dashboard Sales Kg": "Продажи, кг",
+    "Main Dashboard Cash Total": "Касса",
+    "Main Dashboard Bank Total": "Банк",
+    "Main Dashboard Collections": "Поступления",
+    "Main Dashboard Debtor Total": "Дебиторская задолженность",
+    "Main Dashboard Average Price": "Средняя цена",
+    "Main Dashboard Average Cost": "Средняя себестоимость",
+    "Main Dashboard Dividend Total": "Сальдо",
+}
+
 MAIN_CHART_SOURCES = [
     ("Main Dashboard Timeline Source", "Dashboards"),
     ("Main Dashboard Monthly Snapshot Source", "Dashboards"),
@@ -116,7 +128,7 @@ def execute():
             "Number Card",
             card_name,
             {
-                "label": card_name,
+                "label": MAIN_NUMBER_CARD_LABELS.get(card_name, card_name),
                 "type": "Custom",
                 "method": method,
                 "document_type": "Page",

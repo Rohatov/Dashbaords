@@ -9,7 +9,7 @@ dashboards.ui.MainDashboardPage = class MainDashboardPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Main Dashboard"),
+			title: __("Главный дашборд"),
 			single_column: true,
 		});
 
@@ -273,18 +273,18 @@ dashboards.ui.MainDashboardPage = class MainDashboardPage {
 
 	render_timeline_year(year, maxValue) {
 		const months = [
-			"January",
-			"February",
-			"March",
-			"April",
-			"May",
-			"June",
-			"July",
-			"August",
-			"September",
-			"October",
-			"November",
-			"December",
+			"Январь",
+			"Февраль",
+			"Март",
+			"Апрель",
+			"Май",
+			"Июнь",
+			"Июль",
+			"Август",
+			"Сентябрь",
+			"Октябрь",
+			"Ноябрь",
+			"Декабрь",
 		];
 
 		return `
@@ -314,18 +314,18 @@ dashboards.ui.MainDashboardPage = class MainDashboardPage {
 	render_mini_timeline() {
 		const years = this.context.mini_timeline_years || [];
 		const monthLabels = [
-			"January",
-			"February",
-			"March",
-			"April",
-			"May",
-			"June",
-			"July",
-			"August",
-			"September",
-			"October",
-			"November",
-			"December",
+			"Январь",
+			"Февраль",
+			"Март",
+			"Апрель",
+			"Май",
+			"Июнь",
+			"Июль",
+			"Август",
+			"Сентябрь",
+			"Октябрь",
+			"Ноябрь",
+			"Декабрь",
 		];
 		const maxValue = years.length ? Math.max(...years.flatMap((year) => year.values || []), 0) : 0;
 		const chartScale = this.getChartScale(maxValue);

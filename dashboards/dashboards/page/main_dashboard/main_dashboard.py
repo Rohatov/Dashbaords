@@ -13,21 +13,21 @@ from dashboards.dashboards.dashboard_data import (
 
 TAB_ITEMS = [
     {"label": "ГЛАВНЫЙ", "route": "/app/main-dashboard", "active": 1},
-    {"label": "DASHBOARD", "route": "/app/page-dashboard"},
+    {"label": "ДАШБОРД", "route": "/app/page-dashboard"},
     {"label": "KPI", "route": "/app/kpi-dashboard"},
     {"label": "ЕЖЕДНЕВНО", "route": "/app/daily-dashboard"},
-    {"label": "ПРОДАЖА", "route": "/app/sales-dashboard"},
+    {"label": "ПРОДАЖИ", "route": "/app/sales-dashboard"},
     {"label": "КАССА", "route": "/app/cash-dashboard"},
     {"label": "КЛИЕНТ", "route": "/app/client-dashboard"},
-    {"label": "ДИВИДЕНТ", "route": "/app/dividend-analysis"},
+    {"label": "ДИВИДЕНДЫ", "route": "/app/dividend-analysis"},
     {"label": "ЕЖЕМЕСЯЧНО", "route": "/app/monthly-analysis"},
     {"label": "КАССА", "route": "/app/cash-dashboard"},
 ]
 
 
 SIDE_METRICS = [
-    {"label": "Сред ценa", "metric_key": "avg_price"},
-    {"label": "Сред себ", "metric_key": "avg_cost"},
+    {"label": "Средняя цена", "metric_key": "avg_price"},
+    {"label": "Средняя себестоимость", "metric_key": "avg_cost"},
 ]
 
 
@@ -37,7 +37,7 @@ def get_dashboard_context():
         {
             "label": f"Продажа за {get_reference_month_label()}",
             "metric_keys": ["sales_amount", "sales_kg"],
-            "metric_labels": ["Сумма прод", "Кг"],
+            "metric_labels": ["Сумма продаж", "Кг"],
         },
         {
             "label": "Денежные средства",
@@ -45,7 +45,7 @@ def get_dashboard_context():
             "metric_labels": ["Касса", "Банк"],
         },
         {
-            "label": "Отчет о клиента",
+            "label": "Отчет по клиентам",
             "metric_keys": ["collections_total", "debtor_total"],
             "metric_labels": ["Поступления", "Дебитор"],
         },
