@@ -9,7 +9,7 @@ dashboards.ui.CustomerComparisonPage = class CustomerComparisonPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Customer Comparison"),
+			title: __("Сравнение клиентов"),
 			single_column: true,
 		});
 
@@ -59,7 +59,7 @@ dashboards.ui.CustomerComparisonPage = class CustomerComparisonPage {
 	}
 
 	render() {
-		this.$title.text(this.context.title || __("Customer Comparison"));
+		this.$title.text(this.context.title || __("Сравнение клиентов"));
 		this.$subtitle.text(this.context.subtitle || "");
 		this.render_meta();
 		this.render_months();
@@ -71,9 +71,9 @@ dashboards.ui.CustomerComparisonPage = class CustomerComparisonPage {
 		const itemLimit = this.context.item_limit || 0;
 
 		this.$meta.html(`
-			<div class="customer-comparison-meta-line">${__("Years")}: ${frappe.utils.escape_html(years || "-")}</div>
-			<div class="customer-comparison-meta-line">${__("Period")}: ${frappe.utils.escape_html(reference || "-")}</div>
-			<div class="customer-comparison-meta-line">${__("Top customers per month")}: ${itemLimit}</div>
+			<div class="customer-comparison-meta-line">${__("Годы")}: ${frappe.utils.escape_html(years || "-")}</div>
+			<div class="customer-comparison-meta-line">${__("Период")}: ${frappe.utils.escape_html(reference || "-")}</div>
+			<div class="customer-comparison-meta-line">${__("Топ клиентов за месяц")}: ${itemLimit}</div>
 		`);
 	}
 
@@ -82,8 +82,8 @@ dashboards.ui.CustomerComparisonPage = class CustomerComparisonPage {
 		if (!months.length || !months.some((month) => (month.customers || []).length)) {
 			this.$content.html(`
 				<div class="customer-comparison-empty">
-					<div class="customer-comparison-empty-title">${__("No comparison data found")}</div>
-					<div class="customer-comparison-empty-copy">${__("Sales Invoice data is required to build this dashboard.")}</div>
+					<div class="customer-comparison-empty-title">${__("Данные для сравнения не найдены")}</div>
+					<div class="customer-comparison-empty-copy">${__("Для построения этой панели нужны данные счетов продаж.")}</div>
 				</div>
 			`);
 			return;
@@ -128,7 +128,7 @@ dashboards.ui.CustomerComparisonPage = class CustomerComparisonPage {
 				</div>
 				${
 					month.hidden_item_count
-						? `<div class="customer-comparison-footnote">+${month.hidden_item_count} ${__("more customers")}</div>`
+						? `<div class="customer-comparison-footnote">+${month.hidden_item_count} ${__("клиентов еще")}</div>`
 						: ""
 				}
 			</section>

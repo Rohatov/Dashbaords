@@ -9,7 +9,7 @@ dashboards.ui.ComparisonByWeightPage = class ComparisonByWeightPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Comparison by Weight"),
+			title: __("Сравнение по весу"),
 			single_column: true,
 		});
 
@@ -102,10 +102,10 @@ dashboards.ui.ComparisonByWeightPage = class ComparisonByWeightPage {
 				<thead>
 					<tr>
 						<th class="comparison-by-weight-name comparison-by-weight-name--customer">${frappe.utils.escape_html(
-							this.context.customer_title || "Клиент кг"
+							this.context.customer_title || "КГ по клиентам"
 						)}</th>
 						${years.map((year) => `<th>${frappe.utils.escape_html(String(year))}</th>`).join("")}
-						<th>${frappe.utils.escape_html(this.context.total_title || "Total")}</th>
+						<th>${frappe.utils.escape_html(this.context.total_title || "Итого")}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -135,7 +135,7 @@ dashboards.ui.ComparisonByWeightPage = class ComparisonByWeightPage {
 			<table class="comparison-by-weight-table comparison-by-weight-table--items">
 				<thead>
 					<tr>
-						<th class="comparison-by-weight-name comparison-by-weight-name--item">Year</th>
+						<th class="comparison-by-weight-name comparison-by-weight-name--item">Год</th>
 						${years
 							.map(
 								(year) => `
@@ -143,11 +143,11 @@ dashboards.ui.ComparisonByWeightPage = class ComparisonByWeightPage {
 								`
 							)
 							.join("")}
-						<th colspan="2">${frappe.utils.escape_html(this.context.total_title || "Total")}</th>
+						<th colspan="2">${frappe.utils.escape_html(this.context.total_title || "Итого")}</th>
 					</tr>
 					<tr>
 						<th class="comparison-by-weight-name comparison-by-weight-name--item">${frappe.utils.escape_html(
-							this.context.item_title || "Предмет кг"
+							this.context.item_title || "КГ по товарам"
 						)}</th>
 						${years
 							.map(
@@ -157,7 +157,7 @@ dashboards.ui.ComparisonByWeightPage = class ComparisonByWeightPage {
 								`
 							)
 							.join("")}
-						<th>${frappe.utils.escape_html(this.context.total_qty_title || "KG")}</th>
+						<th>${frappe.utils.escape_html(this.context.total_qty_title || "КГ")}</th>
 						<th>${frappe.utils.escape_html(this.context.total_avg_title || "Сред цена")}</th>
 					</tr>
 				</thead>

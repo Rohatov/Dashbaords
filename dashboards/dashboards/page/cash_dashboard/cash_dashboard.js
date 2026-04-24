@@ -9,7 +9,7 @@ dashboards.ui.CashDashboardPage = class CashDashboardPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Cash Dashboard"),
+			title: __("Панель кассы"),
 			single_column: true,
 		});
 
@@ -183,7 +183,7 @@ dashboards.ui.CashDashboardPage = class CashDashboardPage {
 		if (!rows.length) {
 			return `
 				<div class="cash-dashboard-table-empty">
-					${__("No GL Entry data found for the selected period.")}
+					${__("За выбранный период нет записей главной книги.")}
 				</div>
 			`;
 		}
@@ -213,7 +213,7 @@ dashboards.ui.CashDashboardPage = class CashDashboardPage {
 						)
 						.join("")}
 					<tr class="is-total">
-						<td class="is-category">Total</td>
+						<td class="is-category">Итого</td>
 						<td class="is-number">${this.formatInteger(metric.inflow)}</td>
 						<td class="is-number">${this.formatInteger(metric.outflow)}</td>
 					</tr>
@@ -230,7 +230,7 @@ dashboards.ui.CashDashboardPage = class CashDashboardPage {
 
 	formatBalance(value) {
 		if (!value) {
-			return "(Blank)";
+			return "(Пусто)";
 		}
 
 		const millions = Math.round(value / 1000000);
@@ -238,7 +238,7 @@ dashboards.ui.CashDashboardPage = class CashDashboardPage {
 	}
 
 	render_loading() {
-		const loadingMarkup = `<div class="cash-dashboard-table-empty">${__("Loading...")}</div>`;
+		const loadingMarkup = `<div class="cash-dashboard-table-empty">${__("Загрузка...")}</div>`;
 		this.$cashKpi.html(loadingMarkup);
 		this.$bankKpi.html(loadingMarkup);
 		this.$cashBalance.html(loadingMarkup);

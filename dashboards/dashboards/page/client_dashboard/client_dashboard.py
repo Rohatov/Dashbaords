@@ -7,16 +7,16 @@ from dashboards.dashboards.dashboard_data import get_customer_balances
 
 TAB_ITEMS = [
     {"label": "ГЛАВНЫЙ", "route": "/app/main-dashboard"},
-    {"label": "DASHBOARD", "route": "/app/page-dashboard"},
-    {"label": "KPI", "route": "/app/kpi-dashboard"},
+    {"label": "ПАНЕЛЬ", "route": "/app/page-dashboard"},
+    {"label": "КПЭ", "route": "/app/kpi-dashboard"},
     {"label": "ЕЖЕДНЕВНО", "route": "/app/daily-dashboard"},
     {"label": "ПРОДАЖА", "route": "/app/sales-dashboard"},
     {"label": "КАССА", "route": "/app/cash-dashboard"},
     {"label": "КЛИЕНТ", "route": "/app/client-dashboard", "active": 1},
-    {"label": "ДИВИДЕНТ", "route": "/app/dividend-analysis"},
-    {"label": "КЛИЕНТ", "route": "/app/customer-comparison"},
+    {"label": "ДИВИДЕНДЫ", "route": "/app/dividend-analysis"},
+    {"label": "СРАВНЕНИЕ КЛИЕНТОВ", "route": "/app/customer-comparison"},
     {"label": "ЕЖЕМЕСЯЧНО", "route": "/app/monthly-analysis"},
-    {"label": "КАССА", "route": "/app/cash-dashboard"},
+    {"label": "ПОСТАВЩИКИ", "route": "/app/supplier-dashboard"},
 ]
 
 @frappe.whitelist()

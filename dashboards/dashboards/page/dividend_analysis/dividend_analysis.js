@@ -9,7 +9,7 @@ dashboards.ui.DividendAnalysisPage = class DividendAnalysisPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Dividend Analysis"),
+			title: __("Анализ дивидендов"),
 			single_column: true,
 		});
 
@@ -36,9 +36,9 @@ dashboards.ui.DividendAnalysisPage = class DividendAnalysisPage {
 						<div class="dividend-analysis-info-icon" aria-hidden="true">i</div>
 					</header>
 					<div class="dividend-analysis-toolbar">
-						<div class="dividend-analysis-toolbar-title">Топилган даромад йиллар кесимида ойма-ой куринишда</div>
+						<div class="dividend-analysis-toolbar-title">Найденный доход по годам и месяцам</div>
 						<div class="dividend-analysis-toolbar-title dividend-analysis-toolbar-title--right">
-							Инвесторлар ким қайси ойи қанча пул олгани ва умумийси
+							Сколько получил каждый инвестор по месяцам и всего
 						</div>
 					</div>
 					<div class="dividend-analysis-toolbar-meta" data-region="generated-at"></div>
@@ -84,8 +84,8 @@ dashboards.ui.DividendAnalysisPage = class DividendAnalysisPage {
 		);
 		this.render_year_matrix_card({
 			card: "outstanding",
-			title: "Month",
-			subtitle: "Инвесторлар учун умумий дебиторлик қолдиғи",
+			title: "Месяц",
+			subtitle: "Общий дебиторский остаток по инвесторам",
 			columns: this.context.years || [],
 			rows: this.build_simple_rows(this.context.outstanding_by_year || {}),
 		});
@@ -93,15 +93,15 @@ dashboards.ui.DividendAnalysisPage = class DividendAnalysisPage {
 		this.render_breakdown_card();
 		this.render_year_matrix_card({
 			card: "average",
-			title: "Month",
-			subtitle: "Инвесторлар ким қайси ой қанча пул олгани ва умумийси",
+			title: "Месяц",
+			subtitle: "Сколько получил каждый инвестор по месяцам и всего",
 			columns: this.context.years || [],
 			rows: this.build_simple_rows(this.context.average_by_year || {}),
 		});
 		this.render_year_matrix_card({
 			card: "invoice-count",
-			title: "Month",
-			subtitle: "Ойлар кесимида ҳужжатлар сони",
+			title: "Месяц",
+			subtitle: "Количество документов по месяцам",
 			columns: this.context.years || [],
 			rows: this.build_simple_rows(this.context.invoice_count_by_year || {}),
 		});
@@ -114,13 +114,13 @@ dashboards.ui.DividendAnalysisPage = class DividendAnalysisPage {
 
 		$card.html(`
 			<div class="dividend-analysis-investor-total-title">
-				Инвесторла умумий олган суммаси йиллар ва ойма ой куринишда
+				Общая сумма, полученная инвесторами, по годам и месяцам
 			</div>
 			<div class="dividend-analysis-table-wrap dividend-analysis-table-wrap--investor-totals">
 				<table class="dividend-analysis-table dividend-analysis-table--investor-totals">
 					<thead>
 						<tr>
-							<th>Month</th>
+							<th>Месяц</th>
 							${years.map((year) => `<th>${frappe.utils.escape_html(String(year))}</th>`).join("")}
 						</tr>
 					</thead>
@@ -157,7 +157,7 @@ dashboards.ui.DividendAnalysisPage = class DividendAnalysisPage {
 		$card.html(`
 			<div class="dividend-analysis-card-head">
 				<div class="dividend-analysis-card-head-main">
-					<div class="dividend-analysis-card-title">Year</div>
+					<div class="dividend-analysis-card-title">Год</div>
 					<div class="dividend-analysis-card-subtitle">${frappe.utils.escape_html(this.selectedYear || "")}</div>
 				</div>
 				<div class="dividend-analysis-year-picker">
@@ -176,9 +176,9 @@ dashboards.ui.DividendAnalysisPage = class DividendAnalysisPage {
 				<table class="dividend-analysis-table dividend-analysis-table--dense">
 					<thead>
 						<tr>
-							<th>Month</th>
+							<th>Месяц</th>
 							${headerCells}
-							<th>Total</th>
+							<th>Итого</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -221,7 +221,7 @@ dashboards.ui.DividendAnalysisPage = class DividendAnalysisPage {
 				<table class="dividend-analysis-table">
 					<thead>
 						<tr>
-							<th>${frappe.utils.escape_html(metaColumnLabel || "Month")}</th>
+							<th>${frappe.utils.escape_html(metaColumnLabel || "Месяц")}</th>
 							${(columns || [])
 								.map((column) => `<th>${frappe.utils.escape_html(String(column))}</th>`)
 								.join("")}
@@ -258,7 +258,7 @@ dashboards.ui.DividendAnalysisPage = class DividendAnalysisPage {
 		}));
 
 		rows.push({
-			label: "Total",
+			label: "Итого",
 			values: years.map((year) => {
 				const values = dataset?.[year] || [];
 				return this.sumFormattedValues(values);

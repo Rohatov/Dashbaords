@@ -129,7 +129,7 @@ def _get_client_metrics(year: str, month: str | None = None) -> list[dict[str, A
 	sales_rows = frappe.db.sql(
 		f"""
 		SELECT
-			COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Client') AS client,
+			COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент') AS client,
 			SUM(COALESCE(sii.base_net_amount, sii.net_amount, sii.base_amount, sii.amount, 0)) AS sales_amount,
 			SUM(COALESCE(sii.stock_qty, sii.qty, 0) * COALESCE(sii.incoming_rate, 0)) AS cost_amount,
 			SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS qty_total,
@@ -146,7 +146,7 @@ def _get_client_metrics(year: str, month: str | None = None) -> list[dict[str, A
 		WHERE si.docstatus = 1
 		  AND COALESCE(si.is_return, 0) = 0
 		{item_clause}
-		GROUP BY COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Client')
+		GROUP BY COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент')
 		""",
 		item_params,
 		as_dict=True,
@@ -155,14 +155,14 @@ def _get_client_metrics(year: str, month: str | None = None) -> list[dict[str, A
 	return_rows = frappe.db.sql(
 		f"""
 		SELECT
-			COALESCE(NULLIF(customer_name, ''), customer, 'Unknown Client') AS client,
+			COALESCE(NULLIF(customer_name, ''), customer, 'Неизвестный клиент') AS client,
 			SUM(ABS(COALESCE(base_net_total, net_total, 0))) AS return_amount,
 			SUM(COALESCE(loyalty_amount, 0)) AS loyalty_bonus
 		FROM `tabSales Invoice`
 		WHERE docstatus = 1
 		  AND COALESCE(is_return, 0) = 1
 		{invoice_clause}
-		GROUP BY COALESCE(NULLIF(customer_name, ''), customer, 'Unknown Client')
+		GROUP BY COALESCE(NULLIF(customer_name, ''), customer, 'Неизвестный клиент')
 		""",
 		invoice_params,
 		as_dict=True,
@@ -234,7 +234,7 @@ def _build_client_rows(metrics: list[dict[str, Any]]) -> list[list[str | bool]]:
 
 	rows.append(
 		[
-			"Total",
+			"Итого",
 			format_number(total_sales),
 			format_number(total_cost),
 			format_number(total_qty),
@@ -269,7 +269,7 @@ def _build_summary_rows(metrics: list[dict[str, Any]]) -> list[list[str | bool]]
 
 	rows.append(
 		[
-			"Total",
+			"Итого",
 			format_number(sum(row["sales"] for row in metrics)),
 			"100.0%",
 			format_number(sum(row["margin"] for row in metrics)),
@@ -297,8 +297,8 @@ def _build_aggregate_rows(metrics: list[dict[str, Any]]) -> list[list[str | bool
 			result.append(True)
 		return result
 
-	rows = [summarize("All Clients", metrics)]
-	rows.append(summarize("Total", metrics, is_total=True))
+	rows = [summarize("Все клиенты", metrics)]
+	rows.append(summarize("Итого", metrics, is_total=True))
 	return rows
 
 
@@ -334,7 +334,7 @@ def get_kpi_dashboard_data(year: str | None = None, month: str | None = None):
 	yearly_metrics = _get_client_metrics(selected_year)
 
 	return {
-		"title": "KPI",
+		"title": "КПЭ",
 		"years": available_years,
 		"months": MONTH_LABELS,
 		"selected_year": selected_year,

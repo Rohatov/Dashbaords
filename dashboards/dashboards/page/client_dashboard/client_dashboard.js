@@ -9,7 +9,7 @@ dashboards.ui.ClientDashboardPage = class ClientDashboardPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Client Dashboard"),
+			title: __("Панель клиентов"),
 			single_column: true,
 		});
 
@@ -101,7 +101,7 @@ dashboards.ui.ClientDashboardPage = class ClientDashboardPage {
 				</tbody>
 				<tfoot>
 					<tr class="total-row">
-						<td class="text-left font-bold">${__("Total")}</td>
+						<td class="text-left font-bold">${__("Итого")}</td>
 						<td class="text-right font-bold">${this.format_number(totalBalance)}</td>
 					</tr>
 				</tfoot>

@@ -185,9 +185,9 @@
 	--main-mini-timeline-axis-width: 64px;
 	--main-mini-timeline-plot-height: 126px;
 	--main-mini-timeline-label-height: 76px;
-	--main-mini-timeline-top-offset: 16px;
+	--main-mini-timeline-top-offset: 12px;
 	position: relative;
-	padding: 12px 8px 0 var(--main-mini-timeline-axis-width);
+	padding: 0 8px 0 var(--main-mini-timeline-axis-width);
 	min-height: calc(var(--main-mini-timeline-top-offset) + var(--main-mini-timeline-plot-height) + var(--main-mini-timeline-label-height) + 20px);
 }
 
@@ -195,7 +195,7 @@
 	position: absolute;
 	top: var(--main-mini-timeline-top-offset);
 	right: 0;
-	bottom: calc(var(--main-mini-timeline-label-height) + 8px);
+	height: var(--main-mini-timeline-plot-height);
 	left: var(--main-mini-timeline-axis-width);
 	pointer-events: none;
 }
@@ -224,6 +224,7 @@
 	display: grid;
 	grid-template-columns: repeat(12, minmax(0, 0.5fr));
 	gap: 3px;
+	margin-top: var(--main-mini-timeline-top-offset);
 	height: calc(var(--main-mini-timeline-plot-height) + var(--main-mini-timeline-label-height));
 	align-items: end;
 }
@@ -285,7 +286,7 @@
 	height: var(--main-mini-timeline-label-height);
 	display: flex;
 	align-items: flex-start;
-	margin-top: 8px;
+	margin-top: -11px;
 }
 
 .main-dashboard-chart .widget,

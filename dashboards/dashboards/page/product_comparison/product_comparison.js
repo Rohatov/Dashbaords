@@ -9,7 +9,7 @@ dashboards.ui.ProductComparisonPage = class ProductComparisonPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Product Comparison"),
+			title: __("Сравнение продуктов"),
 			single_column: true,
 		});
 
@@ -59,7 +59,7 @@ dashboards.ui.ProductComparisonPage = class ProductComparisonPage {
 	}
 
 	render() {
-		this.$title.text(this.context.title || __("Product Comparison"));
+		this.$title.text(this.context.title || __("Сравнение продуктов"));
 		this.$subtitle.text(this.context.subtitle || "");
 		this.render_meta();
 		this.render_months();
@@ -71,9 +71,9 @@ dashboards.ui.ProductComparisonPage = class ProductComparisonPage {
 		const itemLimit = this.context.item_limit || 0;
 
 		this.$meta.html(`
-			<div class="product-comparison-meta-line">${__("Years")}: ${frappe.utils.escape_html(years || "-")}</div>
-			<div class="product-comparison-meta-line">${__("Period")}: ${frappe.utils.escape_html(reference || "-")}</div>
-			<div class="product-comparison-meta-line">${__("Top items per month")}: ${itemLimit}</div>
+			<div class="product-comparison-meta-line">${__("Годы")}: ${frappe.utils.escape_html(years || "-")}</div>
+			<div class="product-comparison-meta-line">${__("Период")}: ${frappe.utils.escape_html(reference || "-")}</div>
+			<div class="product-comparison-meta-line">${__("Топ товаров за месяц")}: ${itemLimit}</div>
 		`);
 	}
 
@@ -82,8 +82,8 @@ dashboards.ui.ProductComparisonPage = class ProductComparisonPage {
 		if (!months.length || !months.some((month) => (month.items || []).length)) {
 			this.$content.html(`
 				<div class="product-comparison-empty">
-					<div class="product-comparison-empty-title">${__("No comparison data found")}</div>
-					<div class="product-comparison-empty-copy">${__("Sales Invoice data is required to build this dashboard.")}</div>
+					<div class="product-comparison-empty-title">${__("Данные для сравнения не найдены")}</div>
+					<div class="product-comparison-empty-copy">${__("Для построения этой панели нужны данные счетов продаж.")}</div>
 				</div>
 			`);
 			return;
@@ -105,7 +105,7 @@ dashboards.ui.ProductComparisonPage = class ProductComparisonPage {
 			<section class="product-comparison-month">
 				<div class="product-comparison-month-title">${frappe.utils.escape_html(month.month_label || "")}</div>
 				<div class="product-comparison-grid" style="--pc-year-count:${Math.max(years.length, 1)};">
-					<div class="product-comparison-head product-comparison-head--item">${__("Предметы")}</div>
+					<div class="product-comparison-head product-comparison-head--item">${__("Товары")}</div>
 					${years
 						.map(
 							(year) => `
@@ -128,7 +128,7 @@ dashboards.ui.ProductComparisonPage = class ProductComparisonPage {
 				</div>
 				${
 					month.hidden_item_count
-						? `<div class="product-comparison-footnote">+${month.hidden_item_count} ${__("more items")}</div>`
+						? `<div class="product-comparison-footnote">+${month.hidden_item_count} ${__("товаров еще")}</div>`
 						: ""
 				}
 			</section>

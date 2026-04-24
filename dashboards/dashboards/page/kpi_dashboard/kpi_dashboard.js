@@ -9,7 +9,7 @@ dashboards.ui.KPIDashboardPage = class KPIDashboardPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("KPI"),
+			title: __("КПЭ"),
 			single_column: true,
 		});
 		this.selectedYear = null;
@@ -36,23 +36,23 @@ dashboards.ui.KPIDashboardPage = class KPIDashboardPage {
 			<div class="kpi-dashboard-screen">
 				<div class="kpi-dashboard-header">
 					<div class="kpi-dashboard-brand">
-						<div class="kpi-dashboard-logo">KP</div>
+						<div class="kpi-dashboard-logo">КП</div>
 						<div class="kpi-dashboard-brand-copy">
 							<div class="kpi-dashboard-brand-title">2 Информационная Панель</div>
 							<div class="kpi-dashboard-brand-subtitle">Компания</div>
 						</div>
 					</div>
-					<div class="kpi-dashboard-title">KPI</div>
+					<div class="kpi-dashboard-title">КПЭ</div>
 					<div class="kpi-dashboard-header-info">i</div>
 				</div>
 				<div class="kpi-dashboard-body">
 					<aside class="kpi-dashboard-sidebar">
 						<div class="kpi-dashboard-filter-card">
-							<div class="kpi-dashboard-filter-title">Year</div>
+							<div class="kpi-dashboard-filter-title">Год</div>
 							<div class="kpi-dashboard-year-list" data-region="years"></div>
 						</div>
 						<div class="kpi-dashboard-filter-card">
-							<div class="kpi-dashboard-filter-title">Month</div>
+							<div class="kpi-dashboard-filter-title">Месяц</div>
 							<div class="kpi-dashboard-month-list" data-region="months"></div>
 						</div>
 					</aside>
@@ -179,19 +179,19 @@ dashboards.ui.KPIDashboardPage = class KPIDashboardPage {
 
 	render_caption() {
 		this.$caption.text(
-			`${this.selectedMonth || ""} ${this.selectedYear || ""} kesimidagi KPI ko'rsatkichlari mijozlar kesimida dinamik ravishda bazadan yuklandi.`
+			`Показатели КПЭ за ${this.selectedMonth || ""} ${this.selectedYear || ""} в разрезе клиентов загружены из базы данных.`
 		);
 	}
 
 	render_client_table() {
 		const headers = ["Клиент", "Продажа", "Сб.ст", "КГ", "Возврат", "Маржа", "%", "Бонус", "Скидка", "Маржа нет", "PnL"];
-		this.$clientTableTitle.text(`${this.selectedMonth || ""} ${this.selectedYear || ""} oylik ma'lumot`);
+		this.$clientTableTitle.text(`Данные за ${this.selectedMonth || ""} ${this.selectedYear || ""}`);
 		this.$clientTable.html(this.make_table(headers, this.data.client_rows || [], "wide"));
 	}
 
 	render_summary_table() {
 		const headers = ["Клиент", "Продажа", "Сб.ст", "КГ", "Возврат", "Маржа", "%", "Бонус", "Скидка", "Маржа нет", "PnL"];
-		this.$summaryTableTitle.text(`${this.selectedYear || ""} yillik ma'lumot`);
+		this.$summaryTableTitle.text(`Данные за ${this.selectedYear || ""} год`);
 		this.$summaryTable.html(this.make_table(headers, this.data.summary_rows || [], "wide"));
 	}
 

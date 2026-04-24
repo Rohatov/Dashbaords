@@ -14,7 +14,7 @@ from dashboards.dashboards.dashboard_data import (
 TAB_ITEMS = [
     {"label": "ГЛАВНЫЙ", "route": "/app/main-dashboard", "active": 1},
     {"label": "ДАШБОРД", "route": "/app/page-dashboard"},
-    {"label": "KPI", "route": "/app/kpi-dashboard"},
+    {"label": "КПЭ", "route": "/app/kpi-dashboard"},
     {"label": "ЕЖЕДНЕВНО", "route": "/app/daily-dashboard"},
     {"label": "ПРОДАЖИ", "route": "/app/sales-dashboard"},
     {"label": "КАССА", "route": "/app/cash-dashboard"},

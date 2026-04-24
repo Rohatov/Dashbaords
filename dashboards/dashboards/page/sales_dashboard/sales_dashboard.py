@@ -61,8 +61,8 @@ def _get_product_rows(year: str, month: str) -> list[dict[str, Any]]:
 	rows = frappe.db.sql(
 		"""
 		SELECT
-			COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Unknown Item') AS item_key,
-			COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item') AS item,
+			COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Неизвестный товар') AS item_key,
+			COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Неизвестный товар') AS item,
 			SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS kg,
 			SUM(COALESCE(sii.base_net_amount, sii.net_amount, sii.base_amount, sii.amount, 0)) AS sales,
 			SUM(COALESCE(sii.stock_qty, sii.qty, 0) * COALESCE(sii.incoming_rate, 0)) AS cost,
@@ -74,8 +74,8 @@ def _get_product_rows(year: str, month: str) -> list[dict[str, Any]]:
 		  AND YEAR(si.posting_date) = %(year)s
 		  AND MONTH(si.posting_date) = %(month)s
 		GROUP BY
-			COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Unknown Item'),
-			COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item')
+			COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Неизвестный товар'),
+			COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Неизвестный товар')
 		ORDER BY sales DESC, item ASC
 		""",
 		{"year": int(year), "month": int(MONTH_MAP[month])},

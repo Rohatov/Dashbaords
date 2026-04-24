@@ -6,21 +6,21 @@ frappe.provide("dashboards.ui");
 	const SCOPE_CLASS = "custom-dashboard-scope";
 	const MENU_ITEMS = [
 		{ label: __("ГЛАВНЫЙ"), route: "main-dashboard" },
-		{ label: __("Dashboard"), route: "page-dashboard" },
-		{ label: __("KPI"), route: "kpi-dashboard" },
+		{ label: __("Дашборд"), route: "page-dashboard" },
+		{ label: __("КПЭ"), route: "kpi-dashboard" },
 		{ label: __("Ежедневно"), route: "daily-dashboard" },
 		{ label: __("Продажа"), route: "sales-dashboard" },
 		{ label: __("Касса"), route: "cash-dashboard" },
 		{ label: __("Клиент"), route: "client-dashboard" },
-		{ label: __("Срав. по товар"), route: "comparison-by-product" },
-		{ label: __("Дивиденд"), route: "dividend-analysis" },
-		{ label: __("Поставщик"), route: "supplier-dashboard" },
-		{ label: __("Анализ по месяц"), route: "monthly-analysis" },
+		{ label: __("Срав. по товару"), route: "comparison-by-product" },
+		{ label: __("Дивиденды"), route: "dividend-analysis" },
+		{ label: __("Поставщики"), route: "supplier-dashboard" },
+		{ label: __("Анализ по месяцам"), route: "monthly-analysis" },
 		{ label: __("Срав. по кг"), route: "comparison-by-weight" },
-		{ label: __("Срав. по сумма"), route: "comparison-by-amount" },
-		{ label: __("Срав. продукт"), route: "product-comparison" },
-		{ label: __("Срав. клиент"), route: "customer-comparison" },
-		{ label: __("Срав. продукт по клиент"), route: "product-by-customer" },
+		{ label: __("Срав. по сумме"), route: "comparison-by-amount" },
+		{ label: __("Срав. продуктов"), route: "product-comparison" },
+		{ label: __("Срав. клиентов"), route: "customer-comparison" },
+		{ label: __("Товары по клиентам"), route: "product-by-customer" },
 	];
 
 	function readBool(key, defaultValue) {
@@ -45,7 +45,7 @@ frappe.provide("dashboards.ui");
 	}
 
 	function getCurrentLabel(route) {
-		return (MENU_ITEMS.find((item) => item.route === route) || {}).label || __("Dashboards");
+		return (MENU_ITEMS.find((item) => item.route === route) || {}).label || __("Дашборды");
 	}
 
 	dashboards.ui.setupDashboardSidebar = function setupDashboardSidebar({ page, route }) {
@@ -82,11 +82,11 @@ frappe.provide("dashboards.ui");
 
 		$sidebarHost.prepend(`
 			<div class="dashboard-sidebar-shell ${drawerOpen ? "is-drawer-open" : ""}">
-				<button class="dashboard-sidebar-backdrop" type="button" aria-label="${__("Close menu")}"></button>
+				<button class="dashboard-sidebar-backdrop" type="button" aria-label="${__("Закрыть меню")}"></button>
 				<aside class="dashboard-sidebar-nav">
 					<div class="dashboard-sidebar-nav-head">
-						<div class="dashboard-sidebar-nav-title">${__("Dashboards")}</div>
-						<button class="dashboard-sidebar-mobile-close" type="button" aria-label="${__("Close menu")}">
+						<div class="dashboard-sidebar-nav-title">${__("Дашборды")}</div>
+						<button class="dashboard-sidebar-mobile-close" type="button" aria-label="${__("Закрыть меню")}">
 							<span aria-hidden="true">&times;</span>
 						</button>
 					</div>
@@ -96,7 +96,7 @@ frappe.provide("dashboards.ui");
 							type="button"
 							aria-expanded="${menuOpen ? "true" : "false"}"
 						>
-							<span>${__("Dashboard List")}</span>
+							<span>${__("Список дашбордов")}</span>
 							<span class="dashboard-sidebar-group-arrow" aria-hidden="true"></span>
 						</button>
 						<div class="dashboard-sidebar-items">
@@ -115,7 +115,7 @@ frappe.provide("dashboards.ui");
 						</div>
 					</div>
 				</aside>
-				<button class="dashboard-sidebar-mobile-toggle dashboard-sidebar-floating-toggle" type="button" aria-label="${__("Open menu")}">
+				<button class="dashboard-sidebar-mobile-toggle dashboard-sidebar-floating-toggle" type="button" aria-label="${__("Открыть меню")}">
 					<span class="dashboard-sidebar-mobile-toggle-line"></span>
 					<span class="dashboard-sidebar-mobile-toggle-line"></span>
 					<span class="dashboard-sidebar-mobile-toggle-line"></span>

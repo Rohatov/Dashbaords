@@ -70,7 +70,7 @@ def _build_matrix(
     grouped: dict[str, dict[str, Any]] = {}
 
     for row in rows:
-        label = (row.get(label_key) or "").strip() or "Unknown"
+        label = (row.get(label_key) or "").strip() or "Неизвестно"
         month_no = cint(row.get("month_no"))
         if month_no < 1 or month_no > 12:
             continue
@@ -109,7 +109,7 @@ def _build_matrix(
 
     result.append(
         {
-            "label": "Total",
+            "label": "Итого",
             "values": [_format_int(total_by_month.get(month_no, 0)) if total_by_month.get(month_no, 0) else "" for month_no in range(1, 13)],
             "total": _format_int(grand_total),
             "is_total": True,
@@ -123,7 +123,7 @@ def _get_client_rows(year: str) -> list[dict[str, Any]]:
     rows = frappe.db.sql(
         """
         SELECT
-            COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Client') AS client,
+            COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент') AS client,
             MONTH(si.posting_date) AS month_no,
             SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS total_qty
         FROM `tabSales Invoice` si
@@ -131,7 +131,7 @@ def _get_client_rows(year: str) -> list[dict[str, Any]]:
         WHERE si.docstatus = 1
           AND COALESCE(si.is_return, 0) = 0
           AND YEAR(si.posting_date) = %(year)s
-        GROUP BY COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Client'), MONTH(si.posting_date)
+        GROUP BY COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент'), MONTH(si.posting_date)
         ORDER BY total_qty DESC
         """,
         {"year": cint(year)},
@@ -145,7 +145,7 @@ def _get_item_rows(year: str) -> list[dict[str, Any]]:
     rows = frappe.db.sql(
         """
         SELECT
-            COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item') AS item,
+            COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Неизвестный товар') AS item,
             MONTH(si.posting_date) AS month_no,
             SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS total_qty
         FROM `tabSales Invoice` si
@@ -153,7 +153,7 @@ def _get_item_rows(year: str) -> list[dict[str, Any]]:
         WHERE si.docstatus = 1
           AND COALESCE(si.is_return, 0) = 0
           AND YEAR(si.posting_date) = %(year)s
-        GROUP BY COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item'), MONTH(si.posting_date)
+        GROUP BY COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Неизвестный товар'), MONTH(si.posting_date)
         ORDER BY total_qty DESC
         """,
         {"year": cint(year)},
@@ -172,8 +172,8 @@ def get_dashboard_context(year: str | None = None) -> dict[str, Any]:
         "selected_year": selected_year,
         "years": years,
         "months": MONTH_LABELS,
-        "client_section_title": "Клиент кг",
-        "item_section_title": "Предметы кг",
+        "client_section_title": "КГ по клиентам",
+        "item_section_title": "КГ по товарам",
         "client_rows": _get_client_rows(selected_year),
         "item_rows": _get_item_rows(selected_year),
     }

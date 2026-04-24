@@ -44,7 +44,7 @@ def _get_product_rows(years: list[int], month_limit: int) -> list[dict[str, Any]
     rows = frappe.db.sql(
         """
         SELECT
-            COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item') AS item_name,
+            COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Неизвестный товар') AS item_name,
             YEAR(si.posting_date) AS year,
             SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS qty
         FROM `tabSales Invoice` si
@@ -53,7 +53,7 @@ def _get_product_rows(years: list[int], month_limit: int) -> list[dict[str, Any]
           AND COALESCE(si.is_return, 0) = 0
           AND YEAR(si.posting_date) IN %(years)s
           AND MONTH(si.posting_date) <= %(month_limit)s
-        GROUP BY COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item'), YEAR(si.posting_date)
+        GROUP BY COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Неизвестный товар'), YEAR(si.posting_date)
         """,
         {"years": tuple(years), "month_limit": month_limit},
         as_dict=True,
@@ -63,7 +63,7 @@ def _get_product_rows(years: list[int], month_limit: int) -> list[dict[str, Any]
     totals_by_year = defaultdict(float)
 
     for row in rows:
-        label = row.item_name or "Unknown Item"
+        label = row.item_name or "Неизвестный товар"
         year = cint(row.year)
         qty = flt(row.qty)
         grouped[label][year] += qty
@@ -86,7 +86,7 @@ def _get_product_rows(years: list[int], month_limit: int) -> list[dict[str, Any]
     grand_total = sum(totals_by_year.values())
     result.append(
         {
-            "label": "Total",
+            "label": "Итого",
             "values": [_format_int(totals_by_year.get(year, 0)) if totals_by_year.get(year, 0) else "" for year in years],
             "total": _format_int(grand_total) if grand_total else "",
             "is_total": True,
@@ -105,7 +105,7 @@ def _get_customer_year_tables(years: list[int], month_limit: int) -> list[dict[s
         SELECT
             YEAR(si.posting_date) AS year,
             MONTH(si.posting_date) AS month_no,
-            COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Client') AS customer_name,
+            COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент') AS customer_name,
             SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS qty
         FROM `tabSales Invoice` si
         INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
@@ -113,7 +113,7 @@ def _get_customer_year_tables(years: list[int], month_limit: int) -> list[dict[s
           AND COALESCE(si.is_return, 0) = 0
           AND YEAR(si.posting_date) IN %(years)s
           AND MONTH(si.posting_date) <= %(month_limit)s
-        GROUP BY YEAR(si.posting_date), MONTH(si.posting_date), COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Client')
+        GROUP BY YEAR(si.posting_date), MONTH(si.posting_date), COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент')
         """,
         {"years": tuple(years), "month_limit": month_limit},
         as_dict=True,
@@ -125,7 +125,7 @@ def _get_customer_year_tables(years: list[int], month_limit: int) -> list[dict[s
     for row in rows:
         year = cint(row.year)
         month_no = cint(row.month_no)
-        label = row.customer_name or "Unknown Client"
+        label = row.customer_name or "Неизвестный клиент"
         qty = flt(row.qty)
         grouped[year][label][month_no] += qty
         monthly_totals[year][month_no] += qty
@@ -153,7 +153,7 @@ def _get_customer_year_tables(years: list[int], month_limit: int) -> list[dict[s
         total_row_values = [monthly_totals[year].get(month_no, 0) for month_no in month_numbers]
         rows_for_year.append(
             {
-                "label": "Total",
+                "label": "Итого",
                 "values": [_format_int(value) if value else "" for value in total_row_values],
                 "total": _format_int(sum(total_row_values)) if sum(total_row_values) else "",
                 "is_total": True,
@@ -179,11 +179,11 @@ def get_dashboard_context() -> dict[str, Any]:
     month_limit = cint(reference_date.month) or 1
 
     return {
-        "title": "Comparison by Product",
+        "title": "Сравнение по продуктам",
         "years": [str(year) for year in years],
         "reference_month": MONTH_LABELS[month_limit - 1],
         "reference_year": str(reference_date.year),
-        "product_title": "Предметы кг",
+        "product_title": "КГ по товарам",
         "product_rows": _get_product_rows(years, month_limit),
         "customer_tables": _get_customer_year_tables(customer_years, month_limit),
     }

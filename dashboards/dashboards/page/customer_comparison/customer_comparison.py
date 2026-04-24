@@ -11,12 +11,12 @@ from dashboards.dashboards.dashboard_data import MONTH_LABELS
 
 TAB_ITEMS = [
     {"label": "ГЛАВНЫЙ", "route": "/app/main-dashboard"},
-    {"label": "DASHBOARD", "route": "/app/page-dashboard"},
-    {"label": "KPI", "route": "/app/kpi-dashboard"},
+    {"label": "ПАНЕЛЬ", "route": "/app/page-dashboard"},
+    {"label": "КПЭ", "route": "/app/kpi-dashboard"},
     {"label": "ПРОДАЖА", "route": "/app/sales-dashboard"},
     {"label": "КЛИЕНТ", "route": "/app/client-dashboard"},
-    {"label": "CUSTOMER CMP", "route": "/app/customer-comparison", "active": 1},
-    {"label": "PRODUCT CMP", "route": "/app/product-comparison"},
+    {"label": "СРАВНЕНИЕ КЛИЕНТОВ", "route": "/app/customer-comparison", "active": 1},
+    {"label": "СРАВНЕНИЕ ПРОДУКТОВ", "route": "/app/product-comparison"},
 ]
 
 
@@ -71,7 +71,7 @@ def _get_customer_comparison_rows(years: list[int], month_numbers: list[int], it
         SELECT
             MONTH(si.posting_date) AS month_no,
             YEAR(si.posting_date) AS year,
-            COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Customer') AS customer_label,
+            COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент') AS customer_label,
             SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS total_qty
         FROM `tabSales Invoice` si
         INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
@@ -82,7 +82,7 @@ def _get_customer_comparison_rows(years: list[int], month_numbers: list[int], it
         GROUP BY
             MONTH(si.posting_date),
             YEAR(si.posting_date),
-            COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Customer')
+            COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент')
         ORDER BY MONTH(si.posting_date), customer_label, YEAR(si.posting_date)
         """,
         as_dict=True,
@@ -139,8 +139,8 @@ def get_dashboard_context():
 
     return {
         "tabs": TAB_ITEMS,
-        "title": "Customer Comparison",
-        "subtitle": "KG by Month, Year, Клиент",
+        "title": "Сравнение клиентов",
+        "subtitle": "КГ по месяцам, годам и клиентам",
         "years": [str(year) for year in years],
         "months": month_sections,
         "reference_month": MONTH_LABELS[reference_date.month - 1],

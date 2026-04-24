@@ -20,23 +20,23 @@ from dashboards.dashboards.dashboard_data import format_number
 
 TAB_ITEMS = [
     {"label": "ГЛАВНЫЙ", "route": "/app/main-dashboard"},
-    {"label": "DASHBOARD", "route": "/app/page-dashboard", "active": 1},
-    {"label": "KPI", "route": "/app/kpi-dashboard"},
+    {"label": "ПАНЕЛЬ", "route": "/app/page-dashboard", "active": 1},
+    {"label": "КПЭ", "route": "/app/kpi-dashboard"},
     {"label": "ЕЖЕДНЕВНО", "route": "/app/daily-dashboard"},
     {"label": "ПРОДАЖА", "route": "/app/sales-dashboard"},
     {"label": "КАССА", "route": "/app/cash-dashboard"},
     {"label": "КЛИЕНТ", "route": "/app/client-dashboard"},
-    {"label": "ЕЖЕДНЕВНО", "route": "/app/daily-dashboard"},
-    {"label": "ЕЖЕДНЕВНО", "route": "/app/monthly-analysis"},
-    {"label": "КАССА", "route": "/app/cash-dashboard"},
+    {"label": "ДИВИДЕНДЫ", "route": "/app/dividend-analysis"},
+    {"label": "ЕЖЕМЕСЯЧНО", "route": "/app/monthly-analysis"},
+    {"label": "ПОСТАВЩИКИ", "route": "/app/supplier-dashboard"},
 ]
 
 KPI_ITEMS = [
-    {"key": "sales_total", "label": "Сумма продажа"},
-    {"key": "cost_total", "label": "Сумма себестоимость", "subtext": "Савдо"},
-    {"key": "margin_total", "label": "Маржа", "subtext": "Возврат дей-ай суммдаа"},
-    {"key": "rsp_total", "label": "РСП сумма"},
-    {"key": "return_total", "label": "Возврат сумма"},
+    {"key": "sales_total", "label": "Сумма продаж"},
+    {"key": "cost_total", "label": "Себестоимость", "subtext": "Продажи"},
+    {"key": "margin_total", "label": "Маржа", "subtext": "После возвратов"},
+    {"key": "rsp_total", "label": "Сумма РСП"},
+    {"key": "return_total", "label": "Сумма возвратов"},
     {"key": "kg_total", "label": "КГ"},
     {"key": "avg_check", "label": "Сред.чек"},
 ]

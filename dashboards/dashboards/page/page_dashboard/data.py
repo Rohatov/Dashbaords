@@ -173,14 +173,14 @@ def get_product_margin_by_year(limit: int | None = None) -> dict[str, list[list[
         """
         SELECT
             YEAR(si.posting_date) AS year,
-            COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item') AS item_label,
+            COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Неизвестный товар') AS item_label,
             SUM(COALESCE(sii.base_net_amount, sii.net_amount, sii.base_amount, sii.amount, 0)) AS sales_amount,
             SUM(COALESCE(sii.stock_qty, sii.qty, 0) * COALESCE(sii.incoming_rate, 0)) AS cost_amount
         FROM `tabSales Invoice` si
         INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
         WHERE si.docstatus = 1
           AND COALESCE(si.is_return, 0) = 0
-        GROUP BY YEAR(si.posting_date), COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item')
+        GROUP BY YEAR(si.posting_date), COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Неизвестный товар')
         """,
         as_dict=True,
     )
@@ -211,7 +211,7 @@ def get_product_margin_by_year(limit: int | None = None) -> dict[str, list[list[
         total_sales = sum(row["sales"] for row in values)
         total_profitability = (total_margin / total_sales * 100) if total_sales else 0
         top_rows.append(
-            ["Total", format_number(total_margin), f"{total_profitability:.1f}%".replace(".", ","), True]
+            ["Итого", format_number(total_margin), f"{total_profitability:.1f}%".replace(".", ","), True]
         )
         result[year] = top_rows
 
@@ -225,7 +225,7 @@ def get_client_kpi_by_year(limit: int | None = None) -> dict[str, list[list[str 
         """
         SELECT
             YEAR(si.posting_date) AS year,
-            COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Client') AS client,
+            COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент') AS client,
             SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS qty_total,
             SUM(COALESCE(sii.base_net_amount, sii.net_amount, sii.base_amount, sii.amount, 0)) AS sales_amount,
             SUM(COALESCE(sii.stock_qty, sii.qty, 0) * COALESCE(sii.incoming_rate, 0)) AS cost_amount
@@ -233,7 +233,7 @@ def get_client_kpi_by_year(limit: int | None = None) -> dict[str, list[list[str 
         INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
         WHERE si.docstatus = 1
           AND COALESCE(si.is_return, 0) = 0
-        GROUP BY YEAR(si.posting_date), COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Client')
+        GROUP BY YEAR(si.posting_date), COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент')
         """,
         as_dict=True,
     )
@@ -272,7 +272,7 @@ def get_client_kpi_by_year(limit: int | None = None) -> dict[str, list[list[str 
         ]
         result[year].append(
             [
-                "Total",
+                "Итого",
                 format_number(total_qty),
                 format_number(total_sales),
                 f"{total_profitability:.1f}%".replace(".", ","),
@@ -290,14 +290,14 @@ def get_regional_summary_by_year(limit: int = 10) -> dict[str, list[list[str | b
         """
         SELECT
             YEAR(si.posting_date) AS year,
-            COALESCE(NULLIF(si.territory, ''), 'No Territory') AS territory,
+            COALESCE(NULLIF(si.territory, ''), 'Без территории') AS territory,
             SUM(COALESCE(sii.base_net_amount, sii.net_amount, sii.base_amount, sii.amount, 0)) AS sales_amount,
             SUM(COALESCE(sii.stock_qty, sii.qty, 0) * COALESCE(sii.incoming_rate, 0)) AS cost_amount
         FROM `tabSales Invoice` si
         INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
         WHERE si.docstatus = 1
           AND COALESCE(si.is_return, 0) = 0
-        GROUP BY YEAR(si.posting_date), COALESCE(NULLIF(si.territory, ''), 'No Territory')
+        GROUP BY YEAR(si.posting_date), COALESCE(NULLIF(si.territory, ''), 'Без территории')
         """,
         as_dict=True,
     )
@@ -332,7 +332,7 @@ def get_regional_summary_by_year(limit: int = 10) -> dict[str, list[list[str | b
         ]
         rows_for_year.append(
             [
-                "Total",
+                "Итого",
                 format_number(total_sales),
                 format_number(total_margin),
                 f"{(total_margin / total_sales * 100):.1f}%".replace(".", ",") if total_sales else "0,0%",

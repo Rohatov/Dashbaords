@@ -10,13 +10,13 @@ from dashboards.dashboards.dashboard_data import MONTH_LABELS
 
 TAB_ITEMS = [
 	{"label": "ГЛАВНЫЙ", "route": "/app/main-dashboard"},
-	{"label": "ГЛАВНЫЙ", "route": "/app/page-dashboard"},
-	{"label": "ГЛАВНЫЙ", "route": "/app/kpi-dashboard"},
-	{"label": "ОБОРОТ", "route": "/app/overview-dashboard"},
+	{"label": "ПАНЕЛЬ", "route": "/app/page-dashboard"},
+	{"label": "КПЭ", "route": "/app/kpi-dashboard"},
+	{"label": "ЕЖЕДНЕВНО", "route": "/app/daily-dashboard"},
 	{"label": "ПРОДАЖА", "route": "/app/sales-dashboard"},
 	{"label": "КАССА", "route": "/app/cash-dashboard", "active": 1},
 	{"label": "КЛИЕНТ", "route": "/app/client-dashboard"},
-	{"label": "ЕЖЕДНЕВНО", "route": "/app/daily-dashboard"},
+	{"label": "ПОСТАВЩИКИ", "route": "/app/supplier-dashboard"},
 ]
 
 MONTHS = [{"key": label.lower(), "label": label} for label in MONTH_LABELS]
@@ -86,7 +86,7 @@ def _get_flow_rows(account_type: str, start_date: str, end_date: str) -> list[di
 	rows = frappe.db.sql(
 		"""
 		SELECT
-			COALESCE(NULLIF(gle.voucher_type, ''), 'Other') AS label,
+			COALESCE(NULLIF(gle.voucher_type, ''), 'Другое') AS label,
 			SUM(COALESCE(gle.debit, 0)) AS inflow,
 			SUM(COALESCE(gle.credit, 0)) AS outflow
 		FROM `tabGL Entry` gle
@@ -95,7 +95,7 @@ def _get_flow_rows(account_type: str, start_date: str, end_date: str) -> list[di
 		  AND acc.is_group = 0
 		  AND acc.account_type = %(account_type)s
 		  AND gle.posting_date BETWEEN %(start_date)s AND %(end_date)s
-		GROUP BY COALESCE(NULLIF(gle.voucher_type, ''), 'Other')
+		GROUP BY COALESCE(NULLIF(gle.voucher_type, ''), 'Другое')
 		ORDER BY (SUM(COALESCE(gle.debit, 0)) + SUM(COALESCE(gle.credit, 0))) DESC, label ASC
 		""",
 		{

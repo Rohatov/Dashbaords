@@ -9,7 +9,7 @@ dashboards.ui.DailyDashboardPage = class DailyDashboardPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Daily Dashboard"),
+			title: __("Ежедневная панель"),
 			single_column: true,
 		});
 
@@ -179,7 +179,7 @@ dashboards.ui.DailyDashboardPage = class DailyDashboardPage {
 
 	render_calendar() {
 		const date = this.getActiveDate();
-		const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+		const weekdays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 		const values = this.getCalendarValues();
 		const firstDayOffset = (date.getDay() + 6) % 7;
 		const lastDay = (this.context.calendar_meta || {}).days_in_month || new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -211,7 +211,7 @@ dashboards.ui.DailyDashboardPage = class DailyDashboardPage {
 	render_table() {
 		const rows = this.getProductRows();
 		const total = this.buildTotalRow(rows);
-		const headers = ["Предметы", "КГ", "Сумма.прод", "Сумма себест", "Маржа", "РСП сумма", "рен", "ЧП", "ЧП рен"];
+		const headers = ["Товары", "КГ", "Сумма продаж", "Себестоимость", "Маржа", "Сумма РСП", "Рен", "ЧП", "Рен ЧП"];
 
 			this.$table.html(`
 				<div class="daily-dashboard-table-scroll">
@@ -244,7 +244,7 @@ dashboards.ui.DailyDashboardPage = class DailyDashboardPage {
 					<table class="daily-dashboard-table daily-dashboard-table--total">
 						<tfoot>
 							<tr class="is-total">
-								<td class="is-text">Total</td>
+								<td class="is-text">Итого</td>
 								<td class="is-number">${this.formatInteger(total.kg)}</td>
 								<td class="is-number">${this.formatInteger(total.sales)}</td>
 								<td class="is-number">${this.formatInteger(total.cost)}</td>

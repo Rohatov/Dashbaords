@@ -39,12 +39,12 @@ def get_investor_dimension(limit: int = 3) -> list[dict[str, Any]]:
         """
         SELECT
             customer,
-            COALESCE(NULLIF(customer_name, ''), customer, 'Unknown Investor') AS customer_name,
+            COALESCE(NULLIF(customer_name, ''), customer, 'Неизвестный инвестор') AS customer_name,
             SUM(COALESCE(outstanding_amount, 0)) AS outstanding
         FROM `tabSales Invoice`
         WHERE docstatus = 1
           AND COALESCE(is_return, 0) = 0
-        GROUP BY customer, COALESCE(NULLIF(customer_name, ''), customer, 'Unknown Investor')
+        GROUP BY customer, COALESCE(NULLIF(customer_name, ''), customer, 'Неизвестный инвестор')
         ORDER BY outstanding DESC, customer_name ASC
         LIMIT %(limit)s
         """,
@@ -58,9 +58,9 @@ def get_investor_dimension(limit: int = 3) -> list[dict[str, Any]]:
         dimension.append(
             {
                 "key": f"investor_{index + 1}",
-                "label": f"Investor{index + 1}",
+                "label": f"Инвестор {index + 1}",
                 "customer": source.customer if source else None,
-                "display_name": source.customer_name if source else "No data",
+                "display_name": source.customer_name if source else "Нет данных",
                 "total_outstanding": flt(source.outstanding) if source else 0,
             }
         )
@@ -289,7 +289,7 @@ def get_investor_monthly_breakdown(years: list[str], investors: list[dict[str, A
 
         result[year].append(
             {
-                "month": "Total",
+                "month": "Итого",
                 "values": {key: format_number(value) for key, value in total_year.items()},
                 "total": format_number(sum(total_year.values())),
                 "is_total": True,

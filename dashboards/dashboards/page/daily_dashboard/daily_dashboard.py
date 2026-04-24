@@ -70,7 +70,7 @@ def _client_filter_clause(client: str | None, params: dict[str, Any], alias: str
 
 	params["client"] = client
 	return (
-		f" AND COALESCE(NULLIF({alias}.customer_name, ''), {alias}.customer, 'Unknown Client') = %(client)s"
+		f" AND COALESCE(NULLIF({alias}.customer_name, ''), {alias}.customer, 'Неизвестный клиент') = %(client)s"
 	)
 
 
@@ -79,14 +79,14 @@ def _get_clients(year: str, month: str) -> list[str]:
 	rows = frappe.db.sql(
 		f"""
 		SELECT
-			COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Client') AS client,
+			COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент') AS client,
 			SUM(COALESCE(sii.base_net_amount, sii.net_amount, sii.base_amount, sii.amount, 0)) AS sales_amount
 		FROM `tabSales Invoice` si
 		INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
 		WHERE si.docstatus = 1
 		  AND COALESCE(si.is_return, 0) = 0
 		{clause}
-		GROUP BY COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Client')
+		GROUP BY COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент')
 		ORDER BY sales_amount DESC, client ASC
 		""",
 		params,
@@ -124,7 +124,7 @@ def _get_product_rows(year: str, month: str, client: str | None) -> list[dict[st
 	rows = frappe.db.sql(
 		f"""
 		SELECT
-			COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item') AS item,
+			COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Неизвестный товар') AS item,
 			SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS kg,
 			SUM(COALESCE(sii.base_net_amount, sii.net_amount, sii.base_amount, sii.amount, 0)) AS sales,
 			SUM(COALESCE(sii.stock_qty, sii.qty, 0) * COALESCE(sii.incoming_rate, 0)) AS cost,
@@ -135,7 +135,7 @@ def _get_product_rows(year: str, month: str, client: str | None) -> list[dict[st
 		  AND COALESCE(si.is_return, 0) = 0
 		{clause}
 		{client_clause}
-		GROUP BY COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item')
+		GROUP BY COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Неизвестный товар')
 		ORDER BY sales DESC, item ASC
 		""",
 		params,
@@ -178,7 +178,7 @@ def get_dashboard_context(year: str | None = None, month: str | None = None, cli
 	total_days = monthrange(int(selected_year), MONTH_MAP[selected_month])[1]
 
 	return {
-		"title_primary": "З ИНФОРМАЦИОННАЯ ПАНЕЛЬ",
+		"title_primary": "3 ИНФОРМАЦИОННАЯ ПАНЕЛЬ",
 		"title_secondary": "КОМПАНИЯ",
 		"default_filters": {
 			"year": selected_year,

@@ -9,13 +9,13 @@ dashboards.ui.PageDashboardPage = class PageDashboardPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Dashboard"),
+			title: __("Панель"),
 			single_column: true,
 		});
 		this.selectedYear = null;
 		this.charts = {
-			price_trend: { valueLabel: "Сред себе", totalLabel: "Макс" },
-			check_trend: { valueLabel: "Сред цена", totalLabel: "Макс" },
+			price_trend: { valueLabel: "Средняя себестоимость", totalLabel: "Макс" },
+			check_trend: { valueLabel: "Средний чек", totalLabel: "Макс" },
 			kg_trend: { valueLabel: "КГ", totalLabel: "Всего" },
 		};
 
@@ -56,15 +56,15 @@ dashboards.ui.PageDashboardPage = class PageDashboardPage {
 					</div>
 					<div class="dashboard-page-bottom">
 						<div class="dashboard-page-card dashboard-page-chart-card">
-							<div class="dashboard-page-chart-title">ойма-ой narx-нарх динамикаси</div>
+							<div class="dashboard-page-chart-title">Динамика себестоимости по месяцам</div>
 							<div data-chart="price_trend"></div>
 						</div>
 						<div class="dashboard-page-card dashboard-page-chart-card">
-							<div class="dashboard-page-chart-title">Ойма-ой нарх динамикаси</div>
+							<div class="dashboard-page-chart-title">Динамика среднего чека по месяцам</div>
 							<div data-chart="check_trend"></div>
 						</div>
 						<div class="dashboard-page-card dashboard-page-chart-card">
-							<div class="dashboard-page-chart-title">Ойма-ой сотилган товар килода</div>
+							<div class="dashboard-page-chart-title">Проданные товары по месяцам, кг</div>
 							<div data-chart="kg_trend"></div>
 						</div>
 						<div class="dashboard-page-card">
@@ -171,22 +171,22 @@ dashboards.ui.PageDashboardPage = class PageDashboardPage {
 		this.render_table(
 			"sales-by-month",
 			((this.context.sales_by_month_by_year || {})[this.selectedYear]) || [],
-			["Month", "Сумма.прод"]
+			["Месяц", "Сумма продаж"]
 		);
 		this.render_table(
 			"returns-by-month",
 			((this.context.returns_by_month_by_year || {})[this.selectedYear]) || [],
-			["Month", "Возврат"]
+			["Месяц", "Возврат"]
 		);
 		this.render_table(
 			"product-margin",
 			(this.context.product_margin_by_year || {})[this.selectedYear] || [],
-			["Предметы", "Маржа", "Рен"]
+			["Товары", "Маржа", "Рен"]
 		);
 		this.render_table(
 			"client-kpi",
 			((this.context.client_kpi_by_year || {})[this.selectedYear]) || [],
-			["Клиент", "КГ", "Сумма.прод", "Рен"]
+			["Клиент", "КГ", "Сумма продаж", "Рен"]
 		);
 		this.render_table(
 			"regional-summary",
@@ -253,7 +253,7 @@ dashboards.ui.PageDashboardPage = class PageDashboardPage {
 		$container.html(`
 			<div class="dashboard-page-mini-chart">
 				<div class="dashboard-page-mini-chart-head">
-					<div class="is-month">${__("Month")}</div>
+					<div class="is-month">${__("Месяц")}</div>
 					<div class="is-value">${frappe.utils.escape_html(meta.valueLabel)}</div>
 					<div class="is-bar"></div>
 				</div>

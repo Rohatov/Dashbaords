@@ -9,7 +9,7 @@ dashboards.ui.ComparisonByProductPage = class ComparisonByProductPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Comparison by Product"),
+			title: __("Сравнение по продуктам"),
 			single_column: true,
 		});
 		this.handleResize = () => this.syncLayoutHeight();
@@ -74,10 +74,10 @@ dashboards.ui.ComparisonByProductPage = class ComparisonByProductPage {
 				<thead>
 					<tr>
 						<th class="comparison-by-product-name comparison-by-product-name--product">${frappe.utils.escape_html(
-							this.context.product_title || "Предметы кг"
+							this.context.product_title || "КГ по товарам"
 						)}</th>
 						${years.map((year) => `<th>${frappe.utils.escape_html(String(year))}</th>`).join("")}
-						<th>${__("Total")}</th>
+						<th>${__("Итого")}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -114,7 +114,7 @@ dashboards.ui.ComparisonByProductPage = class ComparisonByProductPage {
 												table.title || ""
 											)}</th>
 											${(table.months || []).map((month) => `<th>${frappe.utils.escape_html(month)}</th>`).join("")}
-											<th>${__("Total")}</th>
+											<th>${__("Итого")}</th>
 										</tr>
 									</thead>
 									<tbody>

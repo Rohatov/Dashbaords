@@ -7,6 +7,21 @@ from frappe.utils import cint, flt, format_datetime, get_first_day, get_last_day
 
 
 MONTH_LABELS = [
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
+]
+
+ENGLISH_MONTH_LABELS = [
     "January",
     "February",
     "March",
@@ -21,6 +36,11 @@ MONTH_LABELS = [
     "December",
 ]
 
+MONTH_LOOKUP = {
+    **{label.lower(): index + 1 for index, label in enumerate(MONTH_LABELS)},
+    **{label.lower(): index + 1 for index, label in enumerate(ENGLISH_MONTH_LABELS)},
+}
+
 
 def _month_number(month: str | int | None) -> int | None:
     if month in (None, ""):
@@ -33,10 +53,7 @@ def _month_number(month: str | int | None) -> int | None:
     if month_key.isdigit():
         return cint(month_key)
 
-    try:
-        return MONTH_LABELS.index(month_key.title()) + 1
-    except ValueError:
-        return None
+    return MONTH_LOOKUP.get(month_key)
 
 
 def _get_expense_total_by_root(
@@ -162,7 +179,7 @@ def get_item_stock_ledger_cost_map(year: str | int | None, month: str | int | No
     rows = frappe.db.sql(
         f"""
         SELECT
-            COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Unknown Item') AS item_key,
+            COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Неизвестный товар') AS item_key,
             SUM(ABS(COALESCE(sle.stock_value_difference, 0))) AS cost
         FROM `tabStock Ledger Entry` sle
         INNER JOIN `tabSales Invoice Item` sii ON sii.name = sle.voucher_detail_no
@@ -174,7 +191,7 @@ def get_item_stock_ledger_cost_map(year: str | int | None, month: str | int | No
           AND COALESCE(si.is_return, 0) = 0
           AND YEAR(sle.posting_date) = {frappe.db.escape(year)}
           {month_filter}
-        GROUP BY COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Unknown Item')
+        GROUP BY COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Неизвестный товар')
         """,
         as_dict=True,
     )
@@ -200,7 +217,7 @@ def get_item_cogs_map(year: str | int | None, month: str | int | None = None) ->
     sold_rows = frappe.db.sql(
         f"""
         SELECT
-            COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Unknown Item') AS item_key,
+            COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Неизвестный товар') AS item_key,
             SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS qty
         FROM `tabSales Invoice` si
         INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
@@ -208,7 +225,7 @@ def get_item_cogs_map(year: str | int | None, month: str | int | None = None) ->
           AND COALESCE(si.is_return, 0) = 0
           AND YEAR(si.posting_date) = {frappe.db.escape(year)}
           {month_filter_sales}
-        GROUP BY COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Unknown Item')
+        GROUP BY COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Неизвестный товар')
         """,
         as_dict=True,
     )
@@ -234,7 +251,7 @@ def get_item_rcp_map(year: str | int | None, month: str | int | None = None) -> 
     sold_rows = frappe.db.sql(
         f"""
         SELECT
-            COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Unknown Item') AS item_key,
+            COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Неизвестный товар') AS item_key,
             SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS qty
         FROM `tabSales Invoice` si
         INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
@@ -242,7 +259,7 @@ def get_item_rcp_map(year: str | int | None, month: str | int | None = None) -> 
           AND COALESCE(si.is_return, 0) = 0
           AND YEAR(si.posting_date) = {frappe.db.escape(year)}
           {month_filter_sales}
-        GROUP BY COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Unknown Item')
+        GROUP BY COALESCE(NULLIF(sii.item_code, ''), NULLIF(sii.item_name, ''), 'Неизвестный товар')
         """,
         as_dict=True,
     )
@@ -250,7 +267,7 @@ def get_item_rcp_map(year: str | int | None, month: str | int | None = None) -> 
     manufactured_rows = frappe.db.sql(
         f"""
         SELECT
-            COALESCE(NULLIF(sed.item_code, ''), NULLIF(sed.item_name, ''), 'Unknown Item') AS item_key,
+            COALESCE(NULLIF(sed.item_code, ''), NULLIF(sed.item_name, ''), 'Неизвестный товар') AS item_key,
             SUM(COALESCE(sed.qty, 0)) AS qty
         FROM `tabStock Entry` se
         INNER JOIN `tabStock Entry Detail` sed ON sed.parent = se.name
@@ -259,7 +276,7 @@ def get_item_rcp_map(year: str | int | None, month: str | int | None = None) -> 
           AND sed.is_finished_item = 1
           AND YEAR(se.posting_date) = {frappe.db.escape(year)}
           {month_filter_stock}
-        GROUP BY COALESCE(NULLIF(sed.item_code, ''), NULLIF(sed.item_name, ''), 'Unknown Item')
+        GROUP BY COALESCE(NULLIF(sed.item_code, ''), NULLIF(sed.item_name, ''), 'Неизвестный товар')
         """,
         as_dict=True,
     )
@@ -443,7 +460,7 @@ def get_current_month_sales_summary() -> dict[str, float]:
 
     debtor_total = frappe.db.sql(
         """
-        SELECT SUM(COALESCE(outstanding_amount, 0)) AS debtor_total
+        SELECT SUM(COALESCE(outstanding_amount, 0) * COALESCE(NULLIF(conversion_rate, 0), 1)) AS debtor_total
         FROM `tabSales Invoice`
         WHERE docstatus = 1
           AND COALESCE(is_return, 0) = 0
@@ -491,7 +508,7 @@ def get_customer_balances(limit: int | None = None) -> list[dict[str, Any]]:
         SELECT
             COALESCE(NULLIF(customer_name, ''), customer) AS client,
             customer,
-            SUM(COALESCE(outstanding_amount, 0)) AS balance
+            SUM(COALESCE(outstanding_amount, 0) * COALESCE(NULLIF(conversion_rate, 0), 1)) AS balance
         FROM `tabSales Invoice`
         WHERE docstatus = 1
           AND COALESCE(is_return, 0) = 0

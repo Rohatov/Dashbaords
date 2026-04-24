@@ -9,7 +9,7 @@ dashboards.ui.SalesDashboardPage = class SalesDashboardPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Sales Dashboard"),
+			title: __("Панель продаж"),
 			single_column: true,
 		});
 
@@ -123,12 +123,12 @@ dashboards.ui.SalesDashboardPage = class SalesDashboardPage {
 	render_table() {
 		const rows = this.context.product_rows || [];
 		const total = this.buildTotalRow(rows);
-		const headers = ["Предметы", "КГ", "Сумма.прод", "Сумма себест", "Маржа", "РСП сумма", "рен", "Прибыль"];
+		const headers = ["Товары", "КГ", "Сумма продаж", "Себестоимость", "Маржа", "Сумма РСП", "Рен", "Прибыль"];
 
 		if (!rows.length) {
 			this.$table.html(`
 				<div class="sales-dashboard-table-empty">
-					${__("No submitted Sales Invoice data found for the selected period.")}
+					${__("За выбранный период нет проведенных счетов продаж.")}
 				</div>
 			`);
 			return;
@@ -157,7 +157,7 @@ dashboards.ui.SalesDashboardPage = class SalesDashboardPage {
 						)
 						.join("")}
 					<tr class="is-total">
-						<td class="is-text">Total</td>
+						<td class="is-text">Итого</td>
 						<td class="is-number">${this.formatInteger(total.kg)}</td>
 						<td class="is-number">${this.formatInteger(total.sales)}</td>
 						<td class="is-number">${this.formatInteger(total.cost)}</td>
@@ -200,6 +200,6 @@ dashboards.ui.SalesDashboardPage = class SalesDashboardPage {
 	}
 
 	render_loading() {
-		this.$table.html(`<div class="sales-dashboard-table-empty">${__("Loading...")}</div>`);
+		this.$table.html(`<div class="sales-dashboard-table-empty">${__("Загрузка...")}</div>`);
 	}
 };

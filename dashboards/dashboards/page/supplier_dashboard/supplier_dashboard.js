@@ -9,7 +9,7 @@ dashboards.ui.SupplierDashboardPage = class SupplierDashboardPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Supplier Dashboard"),
+			title: __("Панель поставщиков"),
 			single_column: true,
 		});
 
@@ -71,7 +71,7 @@ dashboards.ui.SupplierDashboardPage = class SupplierDashboardPage {
 	}
 
 	render() {
-		const companyName = this.context.company_name || __("Company");
+		const companyName = this.context.company_name || __("Компания");
 		this.$company.text(companyName);
 		this.$logo.text((companyName || "S").trim().slice(0, 1).toUpperCase());
 		this.$period.text(`Период: ${this.context.period_label || ""}`);
@@ -82,10 +82,8 @@ dashboards.ui.SupplierDashboardPage = class SupplierDashboardPage {
 	render_kpis() {
 		const kpis = this.context.kpis || {};
 		const cards = [
-			{ value: kpis.sum_prepayment, label: "Предоплата", currency: "sum", kind: "prepayment" },
-			{ value: kpis.sum_debt, label: "Долг", currency: "sum", kind: "debt" },
-			{ value: kpis.dollar_prepayment, label: "Предоплата", currency: "usd", kind: "prepayment" },
-			{ value: kpis.dollar_debt, label: "Долг", currency: "usd", kind: "debt" },
+			{ value: kpis.sum_prepayment, label: "Предоплата", kind: "prepayment" },
+			{ value: kpis.sum_debt, label: "Долг", kind: "debt" },
 		];
 
 		this.$kpis.html(
@@ -93,7 +91,7 @@ dashboards.ui.SupplierDashboardPage = class SupplierDashboardPage {
 				.map(
 					(card) => `
 						<div class="supplier-dashboard-kpi-card">
-							<div class="supplier-dashboard-kpi-value">${this.formatKpi(card.value, card.currency, card.kind)}</div>
+							<div class="supplier-dashboard-kpi-value">${this.formatKpi(card.value, card.kind)}</div>
 							<div class="supplier-dashboard-kpi-label">${card.label}</div>
 						</div>
 					`
@@ -108,7 +106,7 @@ dashboards.ui.SupplierDashboardPage = class SupplierDashboardPage {
 		const columns = this.context.columns || {};
 
 		if (!rows.length) {
-			this.$table.html(`<div class="supplier-dashboard-empty">${__("No supplier data found.")}</div>`);
+			this.$table.html(`<div class="supplier-dashboard-empty">${__("Данные по поставщикам не найдены.")}</div>`);
 			return;
 		}
 
@@ -117,13 +115,11 @@ dashboards.ui.SupplierDashboardPage = class SupplierDashboardPage {
 				<thead>
 					<tr>
 						<th class="is-text">Имя поставщика:</th>
-						<th>Валюта</th>
 						<th>Начало</th>
 						<th>Приход</th>
-						<th>Нал оплата</th>
-						<th>Банк оплата</th>
+						<th>Оплата наличными</th>
+						<th>Оплата банком</th>
 						<th>${frappe.utils.escape_html(columns.local_balance_label || "Сум остаток")}</th>
-						<th>${frappe.utils.escape_html(columns.foreign_balance_label || "Доллар")}</th>
 						<th>Рен</th>
 					</tr>
 				</thead>
@@ -133,13 +129,11 @@ dashboards.ui.SupplierDashboardPage = class SupplierDashboardPage {
 							(row) => `
 								<tr>
 									<td class="is-text">${frappe.utils.escape_html(row.supplier_name || "")}</td>
-									<td>${frappe.utils.escape_html(this.getCurrencyLabel(row.currency))}</td>
 									<td>${this.formatNumber(row.opening)}</td>
 									<td>${this.formatNumber(row.inflow)}</td>
 									<td>${this.formatNumber(row.cash_payment)}</td>
 									<td>${this.formatNumber(row.bank_payment)}</td>
 									<td>${row.sum_balance ? this.formatLocalBalance(row.sum_balance) : ""}</td>
-									<td>${row.dollar_balance ? this.formatDollarBalance(row.dollar_balance) : ""}</td>
 									<td class="${row.rentability < 0 ? "is-negative" : ""}">${this.formatPercent(row.rentability)}</td>
 								</tr>
 							`
@@ -148,28 +142,17 @@ dashboards.ui.SupplierDashboardPage = class SupplierDashboardPage {
 				</tbody>
 				<tfoot>
 					<tr>
-						<td class="is-text">Total</td>
-						<td></td>
+						<td class="is-text">Итого</td>
 						<td>${this.formatNumber(totals.opening)}</td>
 						<td>${this.formatNumber(totals.inflow)}</td>
 						<td>${this.formatNumber(totals.cash_payment)}</td>
 						<td>${this.formatNumber(totals.bank_payment)}</td>
 						<td>${totals.sum_balance ? this.formatLocalBalance(totals.sum_balance) : ""}</td>
-						<td>${totals.dollar_balance ? this.formatDollarBalance(totals.dollar_balance) : ""}</td>
-						<td class="${totals.inflow && totals.sum_balance + totals.dollar_balance < 0 ? "is-negative" : ""}">${this.formatPercent(
-							totals.inflow ? ((totals.sum_balance + totals.dollar_balance) / totals.inflow) * 100 : 0
-						)}</td>
+						<td class="${totals.inflow && totals.sum_balance < 0 ? "is-negative" : ""}">${this.formatPercent(totals.inflow ? (totals.sum_balance / totals.inflow) * 100 : 0)}</td>
 					</tr>
 				</tfoot>
 			</table>
 		`);
-	}
-
-	getCurrencyLabel(currency) {
-		if (!currency) return "";
-		if (currency === "UZS") return "Сум";
-		if (currency === "USD") return "Доллар";
-		return currency;
 	}
 
 	formatNumber(value) {
@@ -185,19 +168,9 @@ dashboards.ui.SupplierDashboardPage = class SupplierDashboardPage {
 		return value < 0 ? `-${formatted} сўм` : `${formatted} сўм`;
 	}
 
-	formatDollarBalance(value) {
-		if (!value) return "";
-		const formatted = this.formatNumber(Math.abs(value));
-		return value < 0 ? `($${formatted})` : `$${formatted}`;
-	}
-
-	formatKpi(value, currency, kind) {
+	formatKpi(value, kind) {
 		if (!value) {
-			return "(Blank)";
-		}
-
-		if (currency === "usd") {
-			return kind === "prepayment" ? `($${this.formatNumber(value)})` : `$${this.formatNumber(value)}`;
+			return "(Пусто)";
 		}
 
 		return kind === "prepayment" ? `-${this.formatNumber(value)}` : this.formatNumber(value);
@@ -208,7 +181,7 @@ dashboards.ui.SupplierDashboardPage = class SupplierDashboardPage {
 	}
 
 	render_loading() {
-		const loadingMarkup = `<div class="supplier-dashboard-empty">${__("Loading...")}</div>`;
+		const loadingMarkup = `<div class="supplier-dashboard-empty">${__("Загрузка...")}</div>`;
 		this.$period.html("");
 		this.$kpis.html(loadingMarkup);
 		this.$table.html(loadingMarkup);

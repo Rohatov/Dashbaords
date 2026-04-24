@@ -9,7 +9,7 @@ dashboards.ui.ProductByCustomerPage = class ProductByCustomerPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Product by Customer"),
+			title: __("Товары по клиентам"),
 			single_column: true,
 		});
 		this.selectedCustomer = null;
@@ -74,7 +74,7 @@ dashboards.ui.ProductByCustomerPage = class ProductByCustomerPage {
 
 	render() {
 		this.render_customer_selector();
-		this.$title.text(this.context.title || __("Product by Customer"));
+		this.$title.text(this.context.title || __("Товары по клиентам"));
 		this.$subtitle.text(this.context.subtitle || "");
 		this.render_meta();
 		this.render_months();
@@ -86,19 +86,13 @@ dashboards.ui.ProductByCustomerPage = class ProductByCustomerPage {
 
 		if (!customers.length) {
 			this.$customers.html(`
-				<div class="product-by-customer-empty-strip">${__("No customers found")}</div>
+				<div class="product-by-customer-empty-strip">${__("Клиенты не найдены")}</div>
 			`);
 			return;
 		}
 
 		this.$customers.html(
-			[
-				{
-					value: "",
-					label: __("All Customers"),
-				},
-				...customers,
-			]
+			customers
 				.map(
 					(customer) => `
 						<button
@@ -115,21 +109,19 @@ dashboards.ui.ProductByCustomerPage = class ProductByCustomerPage {
 
 		this.$customers.find(".product-by-customer-pill").on("click", (e) => {
 			const customer = $(e.currentTarget).data("customer") || null;
-			if (customer !== this.selectedCustomer) {
-				this.load_context(customer);
-			}
+			this.load_context(customer === this.selectedCustomer ? null : customer);
 		});
 	}
 
 	render_meta() {
 		const years = (this.context.years || []).join(", ");
 		const reference = [this.context.reference_month, this.context.reference_year].filter(Boolean).join(" ");
-		const customer = this.context.selected_customer_label || __("All Customers");
+		const customer = this.context.selected_customer_label || __("Не выбран");
 
 		this.$meta.html(`
-			<div class="product-by-customer-meta-line">${__("Customer")}: ${frappe.utils.escape_html(customer)}</div>
-			<div class="product-by-customer-meta-line">${__("Years")}: ${frappe.utils.escape_html(years || "-")}</div>
-			<div class="product-by-customer-meta-line">${__("Period")}: ${frappe.utils.escape_html(reference || "-")}</div>
+			<div class="product-by-customer-meta-line">${__("Клиент")}: ${frappe.utils.escape_html(customer)}</div>
+			<div class="product-by-customer-meta-line">${__("Годы")}: ${frappe.utils.escape_html(years || "-")}</div>
+			<div class="product-by-customer-meta-line">${__("Период")}: ${frappe.utils.escape_html(reference || "-")}</div>
 		`);
 	}
 
@@ -138,8 +130,8 @@ dashboards.ui.ProductByCustomerPage = class ProductByCustomerPage {
 		if (!months.length || !months.some((month) => (month.items || []).length)) {
 			this.$content.html(`
 				<div class="product-by-customer-empty">
-					<div class="product-by-customer-empty-title">${__("No product data found")}</div>
-					<div class="product-by-customer-empty-copy">${__("No comparison data is available for the current period.")}</div>
+					<div class="product-by-customer-empty-title">${__("Данные по товарам не найдены")}</div>
+					<div class="product-by-customer-empty-copy">${__("За текущий период нет данных для сравнения.")}</div>
 				</div>
 			`);
 			this.$content.css({
@@ -190,7 +182,7 @@ dashboards.ui.ProductByCustomerPage = class ProductByCustomerPage {
 			<section class="product-by-customer-month">
 				<div class="product-by-customer-month-title">${frappe.utils.escape_html(month.month_label || "")}</div>
 				<div class="product-by-customer-grid" style="--pbc-year-count:${Math.max(years.length, 1)};">
-					<div class="product-by-customer-head product-by-customer-head--item">${__("Предметы")}</div>
+					<div class="product-by-customer-head product-by-customer-head--item">${__("Товары")}</div>
 					${years
 						.map(
 							(year) => `
@@ -213,7 +205,7 @@ dashboards.ui.ProductByCustomerPage = class ProductByCustomerPage {
 				</div>
 				${
 					month.hidden_item_count
-						? `<div class="product-by-customer-footnote">+${month.hidden_item_count} ${__("more items")}</div>`
+						? `<div class="product-by-customer-footnote">+${month.hidden_item_count} ${__("товаров еще")}</div>`
 						: ""
 				}
 			</section>

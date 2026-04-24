@@ -9,7 +9,7 @@ dashboards.ui.ComparisonByAmountPage = class ComparisonByAmountPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Comparison by Amount"),
+			title: __("Сравнение по сумме"),
 			single_column: true,
 		});
 
@@ -105,7 +105,7 @@ dashboards.ui.ComparisonByAmountPage = class ComparisonByAmountPage {
 							this.context.customer_title || "Клиент сумма"
 						)}</th>
 						${years.map((year) => `<th>${frappe.utils.escape_html(String(year))}</th>`).join("")}
-						<th>${frappe.utils.escape_html(this.context.total_title || "Total")}</th>
+						<th>${frappe.utils.escape_html(this.context.total_title || "Итого")}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -135,7 +135,7 @@ dashboards.ui.ComparisonByAmountPage = class ComparisonByAmountPage {
 			<table class="comparison-by-amount-table comparison-by-amount-table--items">
 				<thead>
 					<tr>
-						<th class="comparison-by-amount-name comparison-by-amount-name--item">Year</th>
+						<th class="comparison-by-amount-name comparison-by-amount-name--item">Год</th>
 						${years
 							.map(
 								(year) => `
@@ -143,22 +143,22 @@ dashboards.ui.ComparisonByAmountPage = class ComparisonByAmountPage {
 								`
 							)
 							.join("")}
-						<th colspan="2">${frappe.utils.escape_html(this.context.total_title || "Total")}</th>
+						<th colspan="2">${frappe.utils.escape_html(this.context.total_title || "Итого")}</th>
 					</tr>
 					<tr>
 						<th class="comparison-by-amount-name comparison-by-amount-name--item">${frappe.utils.escape_html(
-							this.context.item_title || "Предметы сумма"
+							this.context.item_title || "Сумма по товарам"
 						)}</th>
 						${years
 							.map(
 								() => `
 									<th>${frappe.utils.escape_html(this.context.amount_title || "Сумма")}</th>
-									<th>${frappe.utils.escape_html(this.context.avg_title || "Сре.чек")}</th>
+									<th>${frappe.utils.escape_html(this.context.avg_title || "Средний чек")}</th>
 								`
 							)
 							.join("")}
 						<th>${frappe.utils.escape_html(this.context.total_amount_title || "Сумма")}</th>
-						<th>${frappe.utils.escape_html(this.context.total_avg_title || "Сре.чек")}</th>
+						<th>${frappe.utils.escape_html(this.context.total_avg_title || "Средний чек")}</th>
 					</tr>
 				</thead>
 				<tbody>

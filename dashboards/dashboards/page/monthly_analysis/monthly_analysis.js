@@ -9,7 +9,7 @@ dashboards.ui.MonthlyAnalysisPage = class MonthlyAnalysisPage {
 		this.wrapper = $(wrapper);
 		this.page = frappe.ui.make_app_page({
 			parent: wrapper,
-			title: __("Monthly Analysis"),
+			title: __("Ежемесячный анализ"),
 			single_column: true,
 		});
 
@@ -68,13 +68,13 @@ dashboards.ui.MonthlyAnalysisPage = class MonthlyAnalysisPage {
 		this.render_years();
 		this.renderTable({
 			$target: this.$clientsTable,
-			title: this.context.client_section_title || "Клиент кг",
+			title: this.context.client_section_title || "КГ по клиентам",
 			rows: this.context.client_rows || [],
 			nameClass: "monthly-analysis-table-name--client",
 		});
 		this.renderTable({
 			$target: this.$itemsTable,
-			title: this.context.item_section_title || "Предметы кг",
+			title: this.context.item_section_title || "КГ по товарам",
 			rows: this.context.item_rows || [],
 			nameClass: "monthly-analysis-table-name--item",
 		});
@@ -117,7 +117,7 @@ dashboards.ui.MonthlyAnalysisPage = class MonthlyAnalysisPage {
 					<tr>
 						<th class="monthly-analysis-table-name ${nameClass}">${frappe.utils.escape_html(title)}</th>
 						${months.map((month) => `<th>${frappe.utils.escape_html(month)}</th>`).join("")}
-						<th>Total</th>
+						<th>Итого</th>
 					</tr>
 				</thead>
 				<tbody>

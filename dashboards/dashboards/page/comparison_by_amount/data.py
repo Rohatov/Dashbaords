@@ -65,7 +65,7 @@ def _get_client_rows(selected_month: str, years: list[str]) -> list[dict[str, An
     rows = frappe.db.sql(
         """
         SELECT
-            COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Client') AS customer_name,
+            COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент') AS customer_name,
             YEAR(si.posting_date) AS year,
             SUM(COALESCE(sii.base_net_amount, sii.net_amount, sii.base_amount, sii.amount, 0)) AS amount
         FROM `tabSales Invoice` si
@@ -74,7 +74,7 @@ def _get_client_rows(selected_month: str, years: list[str]) -> list[dict[str, An
           AND COALESCE(si.is_return, 0) = 0
           AND MONTH(si.posting_date) = %(month_no)s
           AND YEAR(si.posting_date) IN %(years)s
-        GROUP BY COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Unknown Client'), YEAR(si.posting_date)
+        GROUP BY COALESCE(NULLIF(si.customer_name, ''), si.customer, 'Неизвестный клиент'), YEAR(si.posting_date)
         """,
         {"month_no": MONTH_MAP[selected_month], "years": tuple(cint(year) for year in years)},
         as_dict=True,
@@ -84,7 +84,7 @@ def _get_client_rows(selected_month: str, years: list[str]) -> list[dict[str, An
     totals_by_year = defaultdict(float)
 
     for row in rows:
-        label = row.customer_name or "Unknown Client"
+        label = row.customer_name or "Неизвестный клиент"
         year = str(row.year)
         value = flt(row.amount)
         grouped[label][year] += value
@@ -107,7 +107,7 @@ def _get_client_rows(selected_month: str, years: list[str]) -> list[dict[str, An
     grand_total = sum(totals_by_year.values())
     result.append(
         {
-            "label": "Total",
+            "label": "Итого",
             "values": [_format_int(totals_by_year.get(year, 0)) if totals_by_year.get(year, 0) else "" for year in years],
             "total": _format_int(grand_total) if grand_total else "",
             "is_total": True,
@@ -121,7 +121,7 @@ def _get_item_rows(selected_month: str, years: list[str]) -> list[dict[str, Any]
     rows = frappe.db.sql(
         """
         SELECT
-            COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item') AS item_name,
+            COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Неизвестный товар') AS item_name,
             YEAR(si.posting_date) AS year,
             SUM(COALESCE(sii.base_net_amount, sii.net_amount, sii.base_amount, sii.amount, 0)) AS amount,
             SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS qty
@@ -131,7 +131,7 @@ def _get_item_rows(selected_month: str, years: list[str]) -> list[dict[str, Any]
           AND COALESCE(si.is_return, 0) = 0
           AND MONTH(si.posting_date) = %(month_no)s
           AND YEAR(si.posting_date) IN %(years)s
-        GROUP BY COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Unknown Item'), YEAR(si.posting_date)
+        GROUP BY COALESCE(NULLIF(sii.item_name, ''), sii.item_code, 'Неизвестный товар'), YEAR(si.posting_date)
         """,
         {"month_no": MONTH_MAP[selected_month], "years": tuple(cint(year) for year in years)},
         as_dict=True,
@@ -141,7 +141,7 @@ def _get_item_rows(selected_month: str, years: list[str]) -> list[dict[str, Any]
     totals_by_year = defaultdict(lambda: {"amount": 0.0, "qty": 0.0})
 
     for row in rows:
-        label = row.item_name or "Unknown Item"
+        label = row.item_name or "Неизвестный товар"
         year = str(row.year)
         amount = flt(row.amount)
         qty = flt(row.qty)
@@ -193,7 +193,7 @@ def _get_item_rows(selected_month: str, years: list[str]) -> list[dict[str, Any]
 
     result.append(
         {
-            "label": "Total",
+            "label": "Итого",
             "values": total_values,
             "total_amount": _format_int(grand_total_amount) if grand_total_amount else "",
             "total_avg": _format_int(grand_total_avg) if grand_total_avg else "",
@@ -214,11 +214,11 @@ def get_dashboard_context(month: str | None = None) -> dict[str, Any]:
         "years": years,
         "customer_rows": _get_client_rows(selected_month, years),
         "item_rows": _get_item_rows(selected_month, years),
-        "customer_title": "Клиент сумма",
-        "item_title": "Предметы сумма",
-        "avg_title": "Сре.чек",
+        "customer_title": "Сумма по клиентам",
+        "item_title": "Сумма по товарам",
+        "avg_title": "Средний чек",
         "amount_title": "Сумма",
-        "total_title": "Total",
+        "total_title": "Итого",
         "total_amount_title": "Сумма",
-        "total_avg_title": "Сре.чек",
+        "total_avg_title": "Средний чек",
     }
