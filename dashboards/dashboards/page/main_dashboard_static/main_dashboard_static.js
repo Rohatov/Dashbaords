@@ -18,6 +18,20 @@ dashboards.ui.MainDashboardStaticPage = class MainDashboardStaticPage {
 			month: "",
 		};
 		this.months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+		this.fullMonthLabels = {
+			Jan: "January",
+			Feb: "February",
+			Mar: "March",
+			Apr: "April",
+			May: "May",
+			Jun: "June",
+			Jul: "July",
+			Aug: "August",
+			Sep: "September",
+			Oct: "October",
+			Nov: "November",
+			Dec: "December",
+		};
 		this.years = [];
 		this.data = null;
 
@@ -65,9 +79,14 @@ dashboards.ui.MainDashboardStaticPage = class MainDashboardStaticPage {
 						<section class="mds-card mds-balance-card">
 							<div data-region="balance-details"></div>
 						</section>
-						<section class="mds-card mds-break-card">
-							<div data-region="unit-cost"></div>
-						</section>
+						<div class="mds-stack-column">
+							<section class="mds-card mds-break-card">
+								<div data-region="unit-cost"></div>
+							</section>
+							<section class="mds-card mds-health-panel">
+								<div data-region="business-health"></div>
+							</section>
+						</div>
 						<section class="mds-card mds-returns-card">
 							<h2>RETURNS ANALYSIS</h2>
 							<div class="mds-return-chart" data-region="return-chart"></div>
@@ -102,6 +121,7 @@ dashboards.ui.MainDashboardStaticPage = class MainDashboardStaticPage {
 		this.$averageCheck = this.page.main.find('[data-region="average-check"]');
 		this.$balanceDetails = this.page.main.find('[data-region="balance-details"]');
 		this.$unitCost = this.page.main.find('[data-region="unit-cost"]');
+		this.$businessHealth = this.page.main.find('[data-region="business-health"]');
 	}
 
 	bind_events() {
@@ -183,6 +203,7 @@ dashboards.ui.MainDashboardStaticPage = class MainDashboardStaticPage {
 		this.$averageCheck.html(loadingMarkup);
 		this.$balanceDetails.html(loadingMarkup);
 		this.$unitCost.html(loadingMarkup);
+		this.$businessHealth.html(loadingMarkup);
 	}
 
 	render() {
@@ -193,6 +214,7 @@ dashboards.ui.MainDashboardStaticPage = class MainDashboardStaticPage {
 		this.render_average_check();
 		this.render_balance_details();
 		this.render_unit_cost();
+		this.render_business_health_card();
 		this.render_profit_chart();
 	}
 
@@ -225,21 +247,27 @@ dashboards.ui.MainDashboardStaticPage = class MainDashboardStaticPage {
 
 	render_returns_chart() {
 		const returnData = this.data?.returns_analysis?.series || [];
-		const maxReturns = Math.max(1, ...returnData.map((row) => Number(row.tons || 0)));
 		this.$returnChart.html(`
-			<div class="mds-return-grid">
-				${this.months
-					.map((month, index) => {
-						const row = returnData[index] || { tons: 0, amount_display: "" };
-						return this.render_chart_bar({
-							month,
-							row,
-							maxValue: maxReturns,
-							active: month === this.state.month,
-							barClass: "mds-return-bar",
-						});
-					})
-					.join("")}
+			<div class="mds-return-table">
+				<div class="mds-return-table-head">
+					<span>Oy</span>
+					<span>Tonna</span>
+					<span>Summa</span>
+				</div>
+				<div class="mds-return-table-body">
+					${this.months
+						.map((month, index) => {
+							const row = returnData[index] || { tons_display: "", amount_display: "" };
+							return `
+								<div class="mds-return-table-row ${month === this.state.month ? "is-active" : ""}">
+									<span>${frappe.utils.escape_html(this.fullMonthLabels[month] || month)}</span>
+									<strong>${frappe.utils.escape_html(row.tons_display || "0t")}</strong>
+									<strong>${frappe.utils.escape_html(row.amount_display || "0")}</strong>
+								</div>
+							`;
+						})
+						.join("")}
+				</div>
 			</div>
 		`);
 	}
@@ -263,32 +291,58 @@ dashboards.ui.MainDashboardStaticPage = class MainDashboardStaticPage {
 
 	render_margin_bonus() {
 		const data = this.data?.margin_bonus || {};
-		const bonusPercent = Number(data.bonus_percent || 0);
+		const marginPercent = Math.max(0, Number(data.margin_percent || 0));
+		const bonusPercent = Math.max(0, Number(data.bonus_percent || 0));
+		const marketingPercent = Math.max(0, Number(data.marketing_percent || 0));
+		const netProfitPercent = Math.max(0, Number(data.net_profit_percent || 0));
+		const stop1 = marginPercent;
+		const stop2 = stop1 + bonusPercent;
+		const stop3 = stop2 + marketingPercent;
 		this.$marginBonus.html(`
 			<div class="mds-donut-wrap">
-				<div class="mds-donut" style="background: conic-gradient(var(--mds-mint) 0 ${bonusPercent}%, var(--mds-blue) ${bonusPercent}% 100%);">
+				<div class="mds-donut" style="background: conic-gradient(var(--mds-blue) 0 ${stop1}%, var(--mds-mint) ${stop1}% ${stop2}%, var(--mds-gold) ${stop2}% ${stop3}%, var(--mds-red) ${stop3}% 100%);">
 					<div class="mds-donut-core">
 						<strong>${frappe.utils.escape_html(data.center_value || "0%")}</strong>
-						<span>${frappe.utils.escape_html(data.center_label || "Margin")}</span>
+						<span>${frappe.utils.escape_html(data.center_label || "Net Profit")}</span>
 					</div>
 				</div>
 			</div>
 			<div class="mds-legend">
 				<span><i class="is-blue"></i> ${frappe.utils.escape_html(data.margin_display || "Margin (0%)")}</span>
+				<span><i class="is-gold"></i> ${frappe.utils.escape_html(data.marketing_display || "Marketing (0%)")}</span>
 				<span><i class="is-mint"></i> ${frappe.utils.escape_html(data.bonus_display || "Bonus (0%)")}</span>
+				<span><i class="is-red"></i> ${frappe.utils.escape_html(data.net_profit_display || "Net Profit (0%)")}</span>
 			</div>
 		`);
 	}
 
 	render_delta_badge(value, valueDisplay) {
-		const cssClass = Number(value || 0) >= 0 ? "is-up" : "is-down";
-		return `<em class="${cssClass}">${frappe.utils.escape_html(valueDisplay || "0.0%")}</em>`;
+		const numericValue = Number(value || 0);
+		const isUp = numericValue >= 0;
+		const cssClass = isUp ? "is-up" : "is-down";
+		const trendIcon = isUp
+			? `
+				<svg class="mds-trend-arrow ${cssClass}" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+					<path d="M3 14L8 9L11 12L17 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+					<path d="M12.5 6H17V10.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+				</svg>
+			`
+			: `
+				<svg class="mds-trend-arrow ${cssClass}" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+					<path d="M3 6L8 11L11 8L17 14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+					<path d="M12.5 14H17V9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+				</svg>
+			`;
+		return `
+			<em class="${cssClass}">
+				${trendIcon}
+				${frappe.utils.escape_html(valueDisplay || "0.0%")}
+			</em>
+		`;
 	}
 
 	render_average_check() {
 		const data = this.data?.average_check || {};
-		const healthRatio = Number(data.health_ratio || 0);
-		const healthRatioCapped = Math.max(0, Math.min(100, Number(data.health_ratio_capped || 0)));
 		this.$averageCheck.html(`
 			<h2>AVERAGE CHECK</h2>
 			<div class="mds-price-row">
@@ -305,7 +359,15 @@ dashboards.ui.MainDashboardStaticPage = class MainDashboardStaticPage {
 				</div>
 				${this.render_delta_badge(data.cost_change, data.cost_change_display)}
 			</div>
-			<div class="mds-health-card">
+		`);
+	}
+
+	render_business_health() {
+		const data = this.data?.average_check || {};
+		const healthRatio = Number(data.health_ratio || 0);
+		const healthRatioCapped = Math.max(0, Math.min(100, Number(data.health_ratio_capped || 0)));
+		return `
+			<div class="mds-health-card mds-health-card--embedded">
 				<div class="mds-health-head">
 					<div>
 						<span>Business Health</span>
@@ -336,6 +398,13 @@ dashboards.ui.MainDashboardStaticPage = class MainDashboardStaticPage {
 					</div>
 				</div>
 			</div>
+		`;
+	}
+
+	render_business_health_card() {
+		this.$businessHealth.html(`
+			<h2>BUSINESS HEALTH</h2>
+			${this.render_business_health()}
 		`);
 	}
 
@@ -356,7 +425,6 @@ dashboards.ui.MainDashboardStaticPage = class MainDashboardStaticPage {
 
 	render_unit_cost() {
 		const breakEven = this.data?.break_even || {};
-		const data = this.data?.unit_cost || {};
 		const planRatio = Math.max(0, Math.min(100, Number(breakEven.plan_ratio || 0)));
 		const currentRatio = Math.max(planRatio, Math.min(100, Number(breakEven.current_ratio || 0)));
 		const greenWidth = Math.max(currentRatio - planRatio, 0);
@@ -377,24 +445,6 @@ dashboards.ui.MainDashboardStaticPage = class MainDashboardStaticPage {
 				<span class="mds-progress-badge mds-progress-badge--start">${frappe.utils.escape_html(breakEven.start_label || "0t")}</span>
 				<span class="mds-progress-badge mds-progress-badge--plan">${frappe.utils.escape_html(breakEven.plan_label || "Plan: 0t")}</span>
 				<span class="mds-progress-badge mds-progress-badge--current">${frappe.utils.escape_html(breakEven.current_label || "Current: 0t")}</span>
-			</div>
-			<div class="mds-unit-card">
-				<div class="mds-unit-card-head">
-					<span class="mds-unit-period">${frappe.utils.escape_html(data.period_label || "-")}</span>
-					<strong>${frappe.utils.escape_html(data.title || "1 kg kolbasa uchun xarajat")}</strong>
-				</div>
-				<div class="mds-unit-value">${frappe.utils.escape_html(data.unit_cost_display || "0.00 UZS")}</div>
-				<div class="mds-unit-formula">${frappe.utils.escape_html(data.formula_label || "Xarajat / kg")}</div>
-				<div class="mds-unit-stats">
-					<div class="mds-unit-stat">
-						<span>Jami xarajat</span>
-						<strong>${frappe.utils.escape_html(data.production_cost_display || "0.00 UZS")}</strong>
-					</div>
-					<div class="mds-unit-stat">
-						<span>Ishlab chiqarilgan</span>
-						<strong>${frappe.utils.escape_html(data.manufactured_qty_display || "0.00 kg")}</strong>
-					</div>
-				</div>
 			</div>
 		`);
 	}

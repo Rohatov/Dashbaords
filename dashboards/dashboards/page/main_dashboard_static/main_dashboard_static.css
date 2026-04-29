@@ -14,6 +14,7 @@
 	--mds-line: #e5ebf4;
 	--mds-soft: #f7f9fd;
 	--mds-mint: #63e6ad;
+	--mds-gold: #f0b429;
 	--mds-red: #c4161c;
 	min-height: 100vh;
 	padding: 24px 32px 44px;
@@ -177,10 +178,21 @@
 }
 
 .mds-average-card,
-.mds-balance-card,
-.mds-break-card {
+.mds-balance-card {
 	grid-column: span 4;
 	padding: 30px;
+}
+
+.mds-stack-column {
+	grid-column: span 4;
+	display: grid;
+	gap: 14px;
+	align-content: start;
+}
+
+.mds-break-card,
+.mds-health-panel {
+	padding: 24px;
 }
 
 .mds-returns-card {
@@ -348,8 +360,8 @@
 }
 
 .mds-legend {
-	display: flex;
-	justify-content: space-around;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 16px;
 	color: #1b2638;
 	font-size: 17px;
@@ -372,8 +384,16 @@
 	background: var(--mds-mint);
 }
 
+.mds-legend .is-gold {
+	background: var(--mds-gold);
+}
+
 .mds-legend .is-green {
 	background: #007a54;
+}
+
+.mds-legend .is-red {
+	background: var(--mds-red);
 }
 
 .mds-legend--compact {
@@ -412,10 +432,20 @@
 }
 
 .mds-price-row em {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
 	padding: 8px 12px;
 	border-radius: 4px;
 	font-style: normal;
 	font-weight: 800;
+}
+
+.mds-trend-arrow {
+	display: inline-block;
+	width: 18px;
+	height: 18px;
+	flex: 0 0 18px;
 }
 
 .mds-price-row .is-up {
@@ -436,6 +466,17 @@
 	border: 1px solid #e5ebf4;
 	border-radius: 12px;
 	background: linear-gradient(180deg, #fbfcff 0%, #f5f8fd 100%);
+}
+
+.mds-health-card--embedded {
+	margin-top: 26px;
+}
+
+.mds-health-panel h2 {
+	margin: 0 0 18px;
+	font-size: 16px;
+	font-weight: 900;
+	letter-spacing: 0.09em;
 }
 
 .mds-health-head {
@@ -863,30 +904,70 @@
 }
 
 .mds-return-chart {
-	height: 240px;
-	margin-top: 34px;
-	border-top: 1px solid #edf1f6;
-	background: repeating-linear-gradient(to top, transparent 0 82px, #edf1f6 83px 84px);
+	margin-top: 18px;
 }
 
-.mds-return-grid {
+.mds-return-table {
+	border: 1px solid #e4eaf3;
+	border-radius: 12px;
+	background: linear-gradient(180deg, #fbfcff 0%, #f6f8fc 100%);
+	overflow: hidden;
+}
+
+.mds-return-table-head,
+.mds-return-table-row {
 	display: grid;
-	grid-template-columns: repeat(12, 1fr);
-	align-items: end;
-	gap: 12px;
-	height: 100%;
+	grid-template-columns: 0.9fr 0.7fr 1fr;
+	gap: 18px;
+	align-items: center;
 }
 
-.mds-return-bar {
-	background: #ebb5b5;
+.mds-return-table-head {
+	padding: 11px 16px 10px;
+	border-bottom: 1px solid #e4eaf3;
+	color: #5c6d85;
+	font-size: 13px;
+	font-weight: 800;
+	letter-spacing: 0.04em;
 }
 
-.mds-return-bar.is-active {
-	background: var(--mds-red);
+.mds-return-table-head span:nth-child(2),
+.mds-return-table-head span:nth-child(3),
+.mds-return-table-row strong:nth-child(2),
+.mds-return-table-row strong:nth-child(3) {
+	text-align: right;
+}
+
+.mds-return-table-body {
+	display: grid;
+}
+
+.mds-return-table-row {
+	padding: 9px 16px;
+	border-bottom: 1px solid #eef2f7;
+	font-size: 14px;
+}
+
+.mds-return-table-row:last-child {
+	border-bottom: 0;
+}
+
+.mds-return-table-row.is-active {
+	background: #fff2f2;
+}
+
+.mds-return-table-row span {
+	color: #2f415b;
+	font-weight: 700;
+}
+
+.mds-return-table-row strong {
+	color: #9f1d1d;
+	font-weight: 800;
 }
 
 .mds-profit-chart {
-	--mds-profit-chart-height: 332px;
+	--mds-profit-chart-height: 447px;
 	--mds-profit-month-row-height: 44px;
 	margin-top: 22px;
 	height: calc(var(--mds-profit-chart-height) + var(--mds-profit-month-row-height) + 20px);

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import lru_cache
 import math
 from typing import Any
 
@@ -15,10 +16,13 @@ from dashboards.dashboards.dashboard_data import (
     get_creditor_total,
     get_debtor_balance_rows,
     get_debtor_total,
+    get_fixed_cost_total_for_period,
     get_monthly_net_profit_from_profit_and_loss,
     get_other_income_total,
     get_rcp_totals,
+    get_cogs_total_for_period,
     get_monthly_sales_from_profit_and_loss,
+    get_sales_total_for_period,
     get_stock_total,
     get_tax_total,
 )
@@ -48,6 +52,20 @@ def _month_no(month: str | int | None) -> int | None:
 
 def _safe_div(numerator: float, denominator: float) -> float:
     return flt(numerator) / flt(denominator) if flt(denominator) else 0
+
+
+def _get_period_window(year: str, month: str) -> tuple[str, str]:
+    month_no = _month_no(month) or 1
+    start_date = f"{cint(year)}-{month_no:02d}-01"
+    selected_month_start = getdate(start_date)
+    today_date = getdate(today())
+
+    if selected_month_start.year == today_date.year and selected_month_start.month == today_date.month:
+        end_date = str(today_date)
+    else:
+        end_date = str(get_last_day(start_date))
+
+    return start_date, end_date
 
 
 def _compact_number(value: float, precision: int = 1) -> str:
@@ -156,6 +174,7 @@ def _period_clause(year: str, month: str | None = None, alias: str = "") -> tupl
     return clause, params
 
 
+@lru_cache(maxsize=12)
 def _get_monthly_sales_metrics(year: str) -> dict[int, dict[str, float]]:
     clause, params = _period_clause(year)
     rows = frappe.db.sql(
@@ -206,6 +225,7 @@ def _get_monthly_sales_metrics(year: str) -> dict[int, dict[str, float]]:
     return month_map
 
 
+@lru_cache(maxsize=12)
 def _get_monthly_return_metrics(year: str) -> dict[int, dict[str, float]]:
     clause, params = _period_clause(year)
     rows = frappe.db.sql(
@@ -308,6 +328,7 @@ def _get_profitability_chart_data(year: str) -> dict[str, Any]:
     return {"series": series}
 
 
+@lru_cache(maxsize=24)
 def _get_period_totals(year: str, month: str | None = None) -> dict[str, float]:
     sales_metrics = _get_monthly_sales_metrics(year)
     return_metrics = _get_monthly_return_metrics(year)
@@ -344,6 +365,7 @@ def _get_period_totals(year: str, month: str | None = None) -> dict[str, float]:
     return totals
 
 
+@lru_cache(maxsize=24)
 def _get_manufactured_qty(year: str, month: str | None = None) -> float:
     params = {"year": cint(year)}
     month_no = _month_no(month)
@@ -376,6 +398,7 @@ def _get_manufactured_qty(year: str, month: str | None = None) -> float:
     return flt(row.manufactured_qty)
 
 
+@lru_cache(maxsize=24)
 def _get_manufacturing_cost_total(year: str, month: str | None = None) -> float:
     params = {"year": cint(year)}
     month_no = _month_no(month)
@@ -430,20 +453,32 @@ def _get_manufacturing_cost_total(year: str, month: str | None = None) -> float:
 
 def _get_margin_bonus_data(year: str, month: str) -> dict[str, Any]:
     totals = _get_period_totals(year, month)
-    margin_value = flt(totals["sales_amount"]) - flt(totals["cost_amount"])
+    gross_margin_value = flt(totals["sales_amount"]) - flt(totals["cost_amount"])
     bonus_value = flt(totals["bonus_total"]) + flt(totals["loyalty_bonus"])
-    denominator = margin_value + bonus_value
+    marketing_value = flt(get_rcp_totals(year, _month_no(month))["indirect_total"])
+    net_profit_value = flt(get_monthly_net_profit_from_profit_and_loss(year).get(_month_no(month) or 0))
+    margin_value = max(gross_margin_value - bonus_value - marketing_value - net_profit_value, 0)
+    denominator = margin_value + bonus_value + marketing_value + net_profit_value
     margin_percent = round(_safe_div(margin_value * 100, denominator), 1) if denominator else 0
-    bonus_percent = round(100 - margin_percent, 1) if denominator else 0
+    bonus_percent = round(_safe_div(bonus_value * 100, denominator), 1) if denominator else 0
+    marketing_percent = round(_safe_div(marketing_value * 100, denominator), 1) if denominator else 0
+    net_profit_percent = round(_safe_div(net_profit_value * 100, denominator), 1) if denominator else 0
     return {
+        "gross_margin_value": gross_margin_value,
         "margin_value": margin_value,
         "bonus_value": bonus_value,
+        "marketing_value": marketing_value,
+        "net_profit_value": net_profit_value,
         "margin_percent": margin_percent,
         "bonus_percent": bonus_percent,
-        "center_value": f"{int(round(margin_percent))}%",
-        "center_label": "Margin",
+        "marketing_percent": marketing_percent,
+        "net_profit_percent": net_profit_percent,
+        "center_value": f"{int(round(net_profit_percent))}%",
+        "center_label": "Net Profit",
         "margin_display": f"Margin ({margin_percent:g}%)",
         "bonus_display": f"Bonus ({bonus_percent:g}%)",
+        "marketing_display": f"Marketing ({marketing_percent:g}%)",
+        "net_profit_display": f"Net Profit ({net_profit_percent:g}%)",
     }
 
 
@@ -463,7 +498,7 @@ def _get_average_check_data(year: str, month: str) -> dict[str, Any]:
     sales_amount = flt(totals["sales_amount"])
     month_no = _month_no(month) or 12
     period_end = str(get_last_day(f"{cint(year)}-{month_no:02d}-01"))
-    debtor_total = get_debtor_total(period_end=period_end)
+    debtor_total = _get_debtor_total_cached(period_end)
     health_ratio = _safe_div(debtor_total * 100, sales_amount)
     health_ratio_capped = min(max(health_ratio, 0), 100)
 
@@ -516,6 +551,7 @@ def _get_unit_cost_data(year: str, month: str) -> dict[str, Any]:
     }
 
 
+@lru_cache(maxsize=1)
 def _get_inventory_breakdown() -> tuple[dict[str, float], dict[str, float]]:
     rows = frappe.db.sql(
         """
@@ -563,6 +599,7 @@ def _top_breakdown_rows(rows: dict[str, float], empty_label: str) -> list[list[s
     ]
 
 
+@lru_cache(maxsize=24)
 def _get_party_balance_rows(account_type: str, year: str, month: str) -> dict[str, float]:
     month_no = _month_no(month) or 12
     period_end = str(get_last_day(f"{cint(year)}-{month_no:02d}-01"))
@@ -608,6 +645,7 @@ def _get_party_balance_rows(account_type: str, year: str, month: str) -> dict[st
     }
 
 
+@lru_cache(maxsize=24)
 def _get_payable_outstanding_rows(year: str, month: str) -> dict[str, float]:
     month_no = _month_no(month) or 12
     period_end = f"{cint(year)}-{month_no:02d}-01"
@@ -689,10 +727,10 @@ def _top_party_breakdown_rows(rows: dict[str, float], empty_label: str) -> list[
 def _get_balance_details_data(year: str, month: str) -> dict[str, Any]:
     month_no = _month_no(month) or 12
     period_end = str(get_last_day(f"{cint(year)}-{month_no:02d}-01"))
-    cash_total = get_cash_total(period_end=period_end)
-    stock_total = get_stock_total(period_end=period_end)
-    debtor_total = get_debtor_total(period_end=period_end)
-    creditor_total = get_creditor_total(period_end=period_end)
+    cash_total = _get_cash_total_cached(period_end)
+    stock_total = _get_stock_total_cached(period_end)
+    debtor_total = _get_debtor_total_cached(period_end)
+    creditor_total = _get_creditor_total_cached(period_end)
 
     items = [
         {
@@ -719,18 +757,178 @@ def _get_balance_details_data(year: str, month: str) -> dict[str, Any]:
     }
 
 
-def _get_break_even_data(year: str, month: str) -> dict[str, Any]:
-    totals = _get_period_totals(year, month)
-    manufactured_qty = _get_manufactured_qty(year, month)
-    current_tons = _to_tons(manufactured_qty) or _to_tons(totals["qty_total"])
-    sales_amount = flt(totals["sales_amount"])
-    cost_amount = flt(totals["cost_amount"])
-    return_amount = flt(totals["return_amount"])
-    rcp_totals = get_rcp_totals(year, _month_no(month))
+@lru_cache(maxsize=24)
+def _get_debtor_total_cached(period_end: str) -> float:
+    return get_debtor_total(period_end=period_end)
 
-    contribution_total = max(sales_amount - cost_amount - return_amount, 0)
-    contribution_per_ton = _safe_div(contribution_total, current_tons)
-    plan_tons = _safe_div(flt(rcp_totals["rcp_total"]), contribution_per_ton) if contribution_per_ton else 0
+
+@lru_cache(maxsize=24)
+def _get_creditor_total_cached(period_end: str) -> float:
+    return get_creditor_total(period_end=period_end)
+
+
+@lru_cache(maxsize=24)
+def _get_stock_total_cached(period_end: str) -> float:
+    return get_stock_total(period_end=period_end)
+
+
+@lru_cache(maxsize=24)
+def _get_cash_total_cached(period_end: str) -> float:
+    return get_cash_total(period_end=period_end)
+
+
+@lru_cache(maxsize=24)
+def _get_break_even_metrics(year: str, month: str) -> dict[str, float]:
+    from_date, to_date = _get_period_window(year, month)
+    month_no = _month_no(month) or 1
+
+    sales_rows = frappe.db.sql(
+        """
+        SELECT
+            si.posting_date,
+            si.currency,
+            si.company,
+            SUM(COALESCE(sii.stock_qty, sii.qty, 0)) AS qty_total
+        FROM `tabSales Invoice` si
+        INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
+        WHERE si.docstatus = 1
+          AND COALESCE(si.is_return, 0) = 0
+          AND si.posting_date BETWEEN %(from_date)s AND %(to_date)s
+        GROUP BY si.posting_date, si.currency, si.company
+        """,
+        {"from_date": from_date, "to_date": to_date},
+        as_dict=True,
+    )
+
+    manufactured_qty = flt(_get_manufactured_qty(year, month))
+    current_qty = sum(flt(row.qty_total) for row in sales_rows)
+    sales_amount = flt(get_monthly_sales_from_profit_and_loss(year).get(month_no))
+    cost_amount = flt(get_cogs_total_for_period(from_date, to_date))
+    fixed_cost_total = flt(get_fixed_cost_total_for_period(from_date, to_date))
+
+    if to_date != str(get_last_day(from_date)):
+        sales_amount = flt(get_sales_total_for_period(from_date, to_date))
+        cost_amount = flt(get_cogs_total_for_period(from_date, to_date))
+        fixed_cost_total = flt(get_fixed_cost_total_for_period(from_date, to_date))
+        manufactured_qty = flt(_get_manufactured_qty_for_period(from_date, to_date))
+
+    return {
+        "qty_total": current_qty,
+        "manufactured_qty": manufactured_qty,
+        "sales_amount": sales_amount,
+        "cost_amount": cost_amount,
+        "fixed_cost_total": fixed_cost_total,
+    }
+
+
+@lru_cache(maxsize=24)
+def _get_manufactured_qty_for_period(from_date: str, to_date: str) -> float:
+    row = frappe.db.sql(
+        """
+        SELECT
+            SUM(entry_qty) AS manufactured_qty
+        FROM (
+            SELECT
+                se.name,
+                SUM(CASE WHEN COALESCE(sed.is_finished_item, 0) = 1 THEN COALESCE(sed.qty, 0) ELSE 0 END) AS entry_qty
+            FROM `tabStock Entry` se
+            LEFT JOIN `tabStock Entry Detail` sed ON sed.parent = se.name
+            WHERE se.docstatus = 1
+              AND (se.stock_entry_type = 'Manufacture' OR se.purpose = 'Manufacture')
+              AND se.posting_date BETWEEN %(from_date)s AND %(to_date)s
+            GROUP BY se.name
+        ) manufacture_entries
+        """,
+        {"from_date": from_date, "to_date": to_date},
+        as_dict=True,
+    )[0]
+
+    return flt(row.manufactured_qty)
+
+
+@lru_cache(maxsize=48)
+def _get_expense_total_by_root_for_period(
+    from_date: str,
+    to_date: str,
+    root_account_patterns: tuple[str, ...] | list[str],
+    exclude_account_patterns: tuple[str, ...] | list[str] | None = None,
+) -> float:
+    root_account_patterns = list(root_account_patterns or [])
+    exclude_account_patterns = list(exclude_account_patterns or [])
+    if not root_account_patterns:
+        return 0
+
+    pattern_conditions = " OR ".join(
+        " OR ".join(
+            [
+                f"root_acc.name = {frappe.db.escape(pattern)}",
+                f"root_acc.name LIKE {frappe.db.escape(pattern + ' - %')}",
+                f"root_acc.name LIKE {frappe.db.escape('% - ' + pattern + ' - %')}",
+                f"root_acc.name LIKE {frappe.db.escape('% - ' + pattern)}",
+            ]
+        )
+        for pattern in root_account_patterns
+    )
+    exclude_conditions = " OR ".join(
+        " OR ".join(
+            [
+                f"exclude_acc.name = {frappe.db.escape(pattern)}",
+                f"exclude_acc.name LIKE {frappe.db.escape(pattern + ' - %')}",
+                f"exclude_acc.name LIKE {frappe.db.escape('% - ' + pattern + ' - %')}",
+                f"exclude_acc.name LIKE {frappe.db.escape('% - ' + pattern)}",
+            ]
+        )
+        for pattern in exclude_account_patterns
+    )
+    exclude_clause = (
+        f"""
+          AND NOT EXISTS (
+              SELECT 1
+              FROM `tabAccount` exclude_acc
+              WHERE ({exclude_conditions})
+                AND acc.lft >= exclude_acc.lft
+                AND acc.rgt <= exclude_acc.rgt
+          )
+        """
+        if exclude_conditions
+        else ""
+    )
+
+    rows = frappe.db.sql(
+        f"""
+        SELECT
+            gle.posting_date,
+            gle.company,
+            ABS(IFNULL(SUM(gle.debit - gle.credit), 0)) AS total
+        FROM `tabGL Entry` gle
+        INNER JOIN `tabAccount` acc ON acc.name = gle.account
+        WHERE gle.docstatus = 1
+          AND gle.is_cancelled = 0
+          AND gle.posting_date BETWEEN %(from_date)s AND %(to_date)s
+          AND EXISTS (
+              SELECT 1
+              FROM `tabAccount` root_acc
+              WHERE ({pattern_conditions})
+                AND acc.lft >= root_acc.lft
+                AND acc.rgt <= root_acc.rgt
+          )
+          {exclude_clause}
+        GROUP BY gle.posting_date, gle.company
+        """,
+        {"from_date": from_date, "to_date": to_date},
+        as_dict=True,
+    )
+
+    return sum(convert_company_currency_amount(row.total, row.posting_date, row.company) for row in rows)
+
+
+def _get_break_even_data(year: str, month: str) -> dict[str, Any]:
+    metrics = _get_break_even_metrics(year, month)
+    current_tons = _to_tons(metrics["manufactured_qty"]) or _to_tons(metrics["qty_total"])
+    selling_price = _safe_div(metrics["sales_amount"], current_tons)
+    cost_price = _safe_div(metrics["cost_amount"], current_tons)
+    contribution_per_ton = max(selling_price - cost_price, 0)
+    plan_tons = _safe_div(metrics["fixed_cost_total"], contribution_per_ton) if contribution_per_ton else 0
     plan_tons = round(plan_tons, 2)
     current_tons = round(current_tons, 2)
     max_tons = max(plan_tons, current_tons, 1)
@@ -739,8 +937,8 @@ def _get_break_even_data(year: str, month: str) -> dict[str, Any]:
 
     month_no = _month_no(month) or 12
     period_end = str(get_last_day(f"{cint(year)}-{month_no:02d}-01"))
-    debt_total = flt(get_debtor_total(period_end=period_end) or 0)
-    debt_vs_sales_total = debt_total + sales_amount
+    debt_total = flt(_get_debtor_total_cached(period_end) or 0)
+    debt_vs_sales_total = debt_total + flt(metrics["sales_amount"])
     debt_ratio = _safe_div(debt_total * 100, debt_vs_sales_total)
     sales_ratio = 100 - debt_ratio if debt_vs_sales_total else 0
 
@@ -758,6 +956,22 @@ def _get_break_even_data(year: str, month: str) -> dict[str, Any]:
 
 @frappe.whitelist()
 def get_dashboard_data(year: str | None = None, month: str | None = None) -> dict[str, Any]:
+    _get_monthly_sales_metrics.cache_clear()
+    _get_monthly_return_metrics.cache_clear()
+    _get_period_totals.cache_clear()
+    _get_manufactured_qty.cache_clear()
+    _get_manufacturing_cost_total.cache_clear()
+    _get_inventory_breakdown.cache_clear()
+    _get_party_balance_rows.cache_clear()
+    _get_payable_outstanding_rows.cache_clear()
+    _get_break_even_metrics.cache_clear()
+    _get_manufactured_qty_for_period.cache_clear()
+    _get_expense_total_by_root_for_period.cache_clear()
+    _get_debtor_total_cached.cache_clear()
+    _get_creditor_total_cached.cache_clear()
+    _get_stock_total_cached.cache_clear()
+    _get_cash_total_cached.cache_clear()
+
     filters = _resolve_filters(year, month)
     selected_year = filters["selected_year"]
     selected_month = filters["selected_month"]

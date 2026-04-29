@@ -19,6 +19,18 @@ _MONTHLY_NET_PROFIT_PL_CACHE: dict[str, dict[int, float]] = {}
 _TARGET_DEBTOR_ACCOUNT = "1311 - Debtors UZS - P"
 _TARGET_STOCK_ACCOUNT = "1410 - Сырьё склад - P"
 _TARGET_SALES_ACCOUNT = "4110 - Sales - P"
+_TARGET_COGS_ACCOUNT = "5111 - Cost of Goods Sold - P"
+_TARGET_FIXED_COST_ACCOUNTS = [
+    ("5203 - Хозяйственный - P", "5203"),
+    ("5209 - Зарп.адм - P", "5209"),
+    ("5210 - Аренда - P", "5210"),
+    ("5213 - Salary - P", "5213"),
+]
+_TARGET_CASH_ACCOUNTS = [
+    ("1110 - Наличные UZB - P", "1110"),
+    ("1111 - Р/С UZB - P", "1111"),
+    ("1112 - Наличные USD - P", "1112"),
+]
 
 MONTH_LABELS = [
     "Январь",
@@ -168,6 +180,59 @@ def get_sales_account_names() -> list[str]:
 
     _SALES_ACCOUNT_CACHE = list(dict.fromkeys(sales_accounts))
     return _SALES_ACCOUNT_CACHE
+
+
+def get_cogs_account_names() -> list[str]:
+    account_filters = {
+        "root_type": "Expense",
+        "report_type": "Profit and Loss",
+        "disabled": 0,
+        "is_group": 0,
+    }
+    cogs_accounts = frappe.get_all(
+        "Account",
+        filters={**account_filters, "name": _TARGET_COGS_ACCOUNT},
+        pluck="name",
+    )
+
+    if not cogs_accounts:
+        cogs_accounts = frappe.get_all(
+            "Account",
+            filters={**account_filters, "account_number": "5111"},
+            pluck="name",
+        )
+
+    if not cogs_accounts:
+        cogs_accounts = frappe.get_all(
+            "Account",
+            filters=account_filters,
+            or_filters=[
+                ["Account", "name", "like", "5111%"],
+                ["Account", "account_name", "like", "Cost of Goods Sold%"],
+            ],
+            pluck="name",
+        )
+
+    return list(dict.fromkeys(cogs_accounts))
+
+
+def get_fixed_cost_account_names() -> list[str]:
+    account_filters = {
+        "root_type": "Expense",
+        "report_type": "Profit and Loss",
+        "disabled": 0,
+        "is_group": 0,
+    }
+    fixed_cost_accounts: list[str] = []
+
+    for account_name, account_number in _TARGET_FIXED_COST_ACCOUNTS:
+        resolved_name = frappe.db.get_value("Account", {**account_filters, "name": account_name}, "name")
+        if not resolved_name and account_number:
+            resolved_name = frappe.db.get_value("Account", {**account_filters, "account_number": account_number}, "name")
+        if resolved_name:
+            fixed_cost_accounts.append(str(resolved_name))
+
+    return list(dict.fromkeys(fixed_cost_accounts))
 
 
 def get_reporting_currency() -> str:
@@ -354,6 +419,16 @@ def get_gl_accounts_period_total(account_names: list[str], from_date: str, to_da
 def get_sales_total_for_period(from_date: str, to_date: str) -> float:
     sales_accounts = get_sales_account_names()
     return get_gl_accounts_period_total(sales_accounts, from_date, to_date)
+
+
+def get_cogs_total_for_period(from_date: str, to_date: str) -> float:
+    cogs_accounts = get_cogs_account_names()
+    return abs(get_gl_accounts_period_total(cogs_accounts, from_date, to_date))
+
+
+def get_fixed_cost_total_for_period(from_date: str, to_date: str) -> float:
+    fixed_cost_accounts = get_fixed_cost_account_names()
+    return abs(get_gl_accounts_period_total(fixed_cost_accounts, from_date, to_date))
 
 
 def get_sales_profit_and_loss_period_end(year: str | int) -> Any:
@@ -642,33 +717,29 @@ def get_creditor_total(period_end: str | None = None) -> float:
     return 0
 
 
+def _get_cash_account_names() -> list[str]:
+    cash_accounts: list[str] = []
+
+    for account_name, account_number in _TARGET_CASH_ACCOUNTS:
+        resolved_name = frappe.db.get_value("Account", {"name": account_name, "disabled": 0, "is_group": 0}, "name")
+        if not resolved_name and account_number:
+            resolved_name = frappe.db.get_value(
+                "Account",
+                {"account_number": account_number, "disabled": 0, "is_group": 0},
+                "name",
+            )
+        if resolved_name:
+            cash_accounts.append(str(resolved_name))
+
+    return list(dict.fromkeys(cash_accounts))
+
+
 def get_cash_total(period_end: str | None = None) -> float:
-    params: dict[str, Any] = {}
-    period_filter = ""
-    if period_end:
-        params["period_end"] = period_end
-        period_filter = " AND gle.posting_date <= %(period_end)s"
+    cash_accounts = _get_cash_account_names()
+    if not cash_accounts:
+        return 0
 
-    rows = frappe.db.sql(
-        f"""
-        SELECT
-            gle.posting_date,
-            gle.company,
-            SUM(COALESCE(gle.debit, 0) - COALESCE(gle.credit, 0)) AS balance
-        FROM `tabGL Entry` gle
-        INNER JOIN `tabAccount` acc ON acc.name = gle.account
-        WHERE gle.docstatus = 1
-          AND gle.is_cancelled = 0
-          AND acc.is_group = 0
-          AND acc.account_type = 'Cash'
-          {period_filter}
-        GROUP BY gle.posting_date, gle.company
-        """,
-        params,
-        as_dict=True,
-    )
-
-    return sum(convert_company_currency_amount(row.balance, row.posting_date, row.company) for row in rows)
+    return sum(get_gl_account_total(account_name, period_end=period_end) for account_name in cash_accounts)
 
 
 def _month_number(month: str | int | None) -> int | None:
